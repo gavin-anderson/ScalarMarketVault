@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity =0.7.6;
 import '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 
@@ -28,7 +28,7 @@ import '@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.so
 import '@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol';
 import '@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3FlashCallback.sol';
 
-contract ScalarMarketPool is IUniswapV3Pool, NoDelegateCall{
+contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall{
     using LowGasSafeMath for uint256;
     using LowGasSafeMath for int256;
     using SafeCast for uint256;
@@ -56,9 +56,7 @@ contract ScalarMarketPool is IUniswapV3Pool, NoDelegateCall{
     // @inheritdoc IUniswapV3PoolImmutables
     uint128 public immutable override maxLiquidityPerTick;
 
-    // Additions for Settping an upper and lower bounds
-    int24 public immutable allowedTickLower;
-    int24 public immutable allowedTickUpper;
+
 
 
     // IUniswapV3PoolState
@@ -119,19 +117,14 @@ contract ScalarMarketPool is IUniswapV3Pool, NoDelegateCall{
     }
 
     /// @dev Prevents calling a function from anyone except the address returned by IUniswapV3Factory#owner()
-    modifier onlyFactoryOwner() {
+  modifier onlyFactoryOwner() {
         require(msg.sender == IUniswapV3Factory(factory).owner());
         _;
     }
 
-    constructor(int24 _allowedTickLower, int24 _allowedTickUpper, address _factory, address _token0, address _token1, uint24 _fee, int24 _tickSpacing) {
-        allowedTickLower = _allowedTickLower;
-        allowedTickUpper = _allowedTickUpper;
-        // (factory, token0, token1, fee, _tickSpacing) = IUniswapV3PoolDeployer(msg.sender).parameters();
-        factory = _factory; 
-        token0=_token0;
-        token1=_token1;
-        fee=_fee;
+    constructor() {
+        int24 _tickSpacing;
+        (factory, token0, token1, fee, _tickSpacing) = IUniswapV3PoolDeployer(msg.sender).parameters();
         tickSpacing = _tickSpacing;
 
         maxLiquidityPerTick = Tick.tickSpacingToMaxLiquidityPerTick(_tickSpacing);
@@ -476,9 +469,6 @@ contract ScalarMarketPool is IUniswapV3Pool, NoDelegateCall{
         uint128 amount,
         bytes calldata data
     ) external override lock returns (uint256 amount0, uint256 amount1) {
-        // Addition requiring that liquidity be placed between the ticks bounds.
-        require(tickLower >= allowedTickLower && tickUpper <= allowedTickUpper, "Tick range not allowed");
-
         require(amount > 0);
         (, int256 amount0Int, int256 amount1Int) =
             _modifyPosition(
@@ -884,6 +874,4 @@ contract ScalarMarketPool is IUniswapV3Pool, NoDelegateCall{
 
         emit CollectProtocol(msg.sender, recipient, amount0, amount1);
     }
-
-
 }

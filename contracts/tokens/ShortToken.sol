@@ -9,22 +9,15 @@ contract ShortToken is ERC20, ERC20Burnable, Ownable {
 
     address public admin;
 
-    constructor() ERC20("Short Token", "Shhoorrtt") Ownable(msg.sender){
+    constructor() ERC20("Short Token", "SSHHOORRTT") Ownable(msg.sender){
         
     }
 
-    function setAdmin(address newAdmin) external onlyOwner{
-        require(newAdmin != address(0), "New admin is the zero address");
-        admin = newAdmin;
-    }
-
     function mint(address to, uint256 amount) external {
-        require(msg.sender == admin, "Only admin can mint");
         _mint(to, amount);
     }
 
     function burn(address from, uint256 amount) external {
-        require(msg.sender == admin, "Only admin can burn");
         _burn(from, amount);
     }
 

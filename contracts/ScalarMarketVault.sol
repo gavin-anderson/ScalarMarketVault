@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import './LongToken.sol';
-import './ShortToken.sol';
+import './tokens/LongToken.sol';
+import './tokens/ShortToken.sol';
+import './tokens/USDC.sol';
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ScalarMarketVault  {
-    IERC20 public usdc;
+    USDC public usdc;
     LongToken public longToken;
     ShortToken public shortToken;
 
@@ -19,7 +21,7 @@ contract ScalarMarketVault  {
     uint256 public currentValue;
 
     constructor(address _usdcAddress, address _longTokenAddress, address _shortTokenAddress, uint256 _startRange, uint256 _endRange, uint256 _currentValue)  {
-        usdc = IERC20(_usdcAddress);
+        usdc = USDC(_usdcAddress);
         longToken = LongToken(_longTokenAddress);
         shortToken = ShortToken(_shortTokenAddress);
         startRange = _startRange;
@@ -35,6 +37,14 @@ contract ScalarMarketVault  {
         shortToken.mint(msg.sender, usdcAmount); 
     }
 
+    function createPool()internal{
+
+    }
+
+    function swap() public{
+
+    }
+
     function redeem(uint256 longAmount, uint256 shortAmount) public {
         require(longToken.transferFrom(msg.sender, address(this), longAmount), "Long token transfer failed");
         require(shortToken.transferFrom(msg.sender, address(this), shortAmount), "Short token transfer failed");
@@ -45,6 +55,7 @@ contract ScalarMarketVault  {
         uint256 totalValue = (longAmount * longPrice + shortAmount * shortPrice) / BASE;
         require(usdc.transfer(msg.sender, totalValue), "USDC transfer failed");
     }
+    
 
     function getLongPrice()public{
             uint256 distanceFromStart = currentValue - startRange;
@@ -58,7 +69,7 @@ contract ScalarMarketVault  {
             currentValue = _currentValue;
     }
 
-    function min(uint256 a, uint256 b)internal returns(uint256){
+    function min(uint256 a, uint256 b)internal pure returns(uint256){
         if (a<b){
             return a;
         }else{
