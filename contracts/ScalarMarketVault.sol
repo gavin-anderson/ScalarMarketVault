@@ -1,13 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.7.6;
+pragma abicoder v2;
 
-// import './tokens/LongToken.sol';
-// import './tokens/ShortToken.sol';
-
+  
 
 interface IUSDC{
     function transferFrom(address sender, address recipient, uint256 amount)external returns(bool);
 
+}
+interface ILongToken{
+      function mint(address to, uint256 amount) external;
+      function transferFrom(address sender, address receiver,uint256 amount)external;
+
+}
+
+interface IShortToken{
+    function mint(address to, uint256 amount) external;
+    function transferFrom(address sender, address receiver,uint256 amount)external;
 }
 
 interface IUniswapV3Factory {
@@ -26,43 +35,51 @@ interface IUniswapV3Pool {
     );
     function initialize(uint160 sqrtPriceX96) external;
 
-    function mint( address recipient,int24 tickLower,int24 tickUpper,uint128 amount,bytes calldata data) external returns(uint256 amount0, uint256 amount1);
-
 }
-interface ILongToken{
-      function mint(address to, uint256 amount) external;
-      function transferFrom(address sender, address receiver,uint256 amount)external;
-
+interface INonfungiblePositionManager{
+    struct MintParams {
+    address token0;
+    address token1;
+    uint24 fee;
+    int24 tickLower;
+    int24 tickUpper;
+    uint128 amount0Desired;
+    uint128 amount1Desired;
+    uint256 amount0Min;
+    uint256 amount1Min;
+    address recipient;
+    uint256 deadline;
+}
+  
+    function mint(MintParams calldata params)external payable returns (uint256 tokenId,uint128 liquidity, uint256 amount0,uint256 amount1);
 }
 
-interface IShortToken{
-    function mint(address to, uint256 amount) external;
-    function transferFrom(address sender, address receiver,uint256 amount)external;
-}
-
-interface IUniswapV3MintCallback {
-        function uniswapV3MintCallback(uint256 amount0Owed, uint256 amount1Owed, bytes calldata data) external;
-}
-
-contract ScalarMarketVault is IUniswapV3MintCallback {
+contract ScalarMarketVault  {
     ILongToken public longToken;
     IShortToken public shortToken;
 
     address public constant UNISWAP_V3_FACTORY_ADDRESS = 0x0227628f3F023bb0B980b67D528571c95c6DaC1c;
-    IUniswapV3Factory private uniswapV3Factory = IUniswapV3Factory(UNISWAP_V3_FACTORY_ADDRESS);
+    IUniswapV3Factory public uniswapV3Factory = IUniswapV3Factory(UNISWAP_V3_FACTORY_ADDRESS);
+
+    address public constant NONFUNGIBLE_POSITION_MANAGER = 0x1238536071E1c677A632429e3655c799b22cDA52;
+    INonfungiblePositionManager public positionManager = INonfungiblePositionManager(NONFUNGIBLE_POSITION_MANAGER);
 
     address public constant USDC_ADDRESS = 0xd6d2BFd492bC4ba4da315d9C9a1089c494E2F4eA;
-    IUSDC private usdc = IUSDC(USDC_ADDRESS);
+    IUSDC public usdc = IUSDC(USDC_ADDRESS);
 
     address public POOL_ADDRESS;
     
-    
-
     uint256 public BASE = 1000;
     uint256 public longPrice;
 
     uint256 public startRange;
     uint256 public endRange;
+
+    uint24 public poolFee;
+
+    int24 private constant MIN_TICK = -887272;
+    int24 private constant MAX_TICK = -MIN_TICK;
+    int24 private constant TICK_SPACING = 60;
 
     constructor(address _longTokenAddress, address _shortTokenAddress, uint256 _startRange, uint256 _endRange)  {
         longToken = ILongToken(_longTokenAddress);
@@ -80,7 +97,8 @@ contract ScalarMarketVault is IUniswapV3MintCallback {
     }
 
     function createUniPool(address tokenA, address tokenB, uint24 fee) public returns (address){
-        POOL_ADDRESS = uniswapV3Factory.createPool(tokenA, tokenB, fee);
+        poolFee = fee;
+        POOL_ADDRESS = uniswapV3Factory.createPool(tokenA, tokenB, poolFee);
         require(POOL_ADDRESS != address(0), "Failed to create Uniswap V3 Pool");
         return POOL_ADDRESS;
     }
@@ -90,26 +108,28 @@ contract ScalarMarketVault is IUniswapV3MintCallback {
         pool.initialize(sqrtPriceX96);
     }
 
-    function mint(int24 tickLower, int24 tickUpper, uint128 amountDesired) public returns(uint256 amount0, uint256 amount1){
-        // Will only work for first liquidity
-
-        bytes memory data = abi.encode(msg.sender);
-        IUniswapV3Pool pool = IUniswapV3Pool(POOL_ADDRESS);
-        (amount0,amount1) = pool.mint(msg.sender, tickLower, tickUpper, amountDesired, data);
-    }
-
-    function uniswapV3MintCallback(uint256 amount0Owed,uint256 amount1Owed,bytes calldata data) external override {
-        require(msg.sender == address(POOL_ADDRESS), "Caller is not the Uniswap V3 Pool");
+    function mintNewPosition(uint128 amount0Add, uint128 amount1Add) external returns(uint256 tokenId,uint128 liquidity,uint256 amount0, uint256 amount1){
         
-        // Decode the data if needed
-        address sender = abi.decode(data, (address));
+        INonfungiblePositionManager.MintParams
+            memory params = INonfungiblePositionManager.MintParams({
+                token0: address(longToken),
+                token1: address(shortToken),
+                fee: poolFee,
+                tickLower: (MIN_TICK / TICK_SPACING) * TICK_SPACING,
+                tickUpper: (MAX_TICK / TICK_SPACING) * TICK_SPACING,
+                amount0Desired: amount0Add,
+                amount1Desired: amount1Add,
+                amount0Min: 0,
+                amount1Min: 0,
+                recipient: msg.sender,
+                deadline: block.timestamp
+            });
 
-        // Transfer required token amounts to the pool
-        if (amount0Owed > 0) longToken.transferFrom(sender, msg.sender, amount0Owed);
-        if (amount1Owed > 0) shortToken.transferFrom(sender, msg.sender, amount1Owed);
-
-        // Additional logic here if necessary
+        (tokenId, liquidity, amount0, amount1) = positionManager.mint(params);
+   
+       
     }
+
     
 
 
