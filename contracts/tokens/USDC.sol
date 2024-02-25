@@ -2,23 +2,17 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract USDC is ERC20, ERC20Burnable, Ownable {
+contract USDC is ERC20 {
+    string private _name = "USDC";
+    string private constant _symbol = "USDC";
+    uint private constant _numTokens = 10_000_000_000;
 
-    address public admin;
-
-    constructor() ERC20("USDC", "USDC") Ownable(msg.sender){
-        
+    constructor() ERC20(_name, _symbol) {
+        _mint(msg.sender, _numTokens * 10 ** decimals());
     }
 
-    function mint(address to, uint256 amount) external {
-        _mint(to, amount);
+    function decimals() public pure override returns (uint8) {
+        return 6;
     }
-
-    function burn(address from, uint256 amount) external {
-        _burn(from, amount);
-    }
-
 }
