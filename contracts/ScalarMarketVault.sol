@@ -2,6 +2,9 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
+import "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol";
+import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
+import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
   
 
 interface IUSDC{
@@ -64,7 +67,7 @@ contract ScalarMarketVault  {
     address public constant NONFUNGIBLE_POSITION_MANAGER = 0x1238536071E1c677A632429e3655c799b22cDA52;
     INonfungiblePositionManager public positionManager = INonfungiblePositionManager(NONFUNGIBLE_POSITION_MANAGER);
 
-    address public constant USDC_ADDRESS = 0xd6d2BFd492bC4ba4da315d9C9a1089c494E2F4eA;
+    address public constant USDC_ADDRESS = 0xD87bdC14576BB9247DF4757DE3A1e02a992b3f10;
     IUSDC public usdc = IUSDC(USDC_ADDRESS);
 
     address public POOL_ADDRESS;
@@ -77,15 +80,18 @@ contract ScalarMarketVault  {
 
     uint24 public poolFee;
 
-    int24 private constant MIN_TICK = -887272;
-    int24 private constant MAX_TICK = -MIN_TICK;
-    int24 private constant TICK_SPACING = 60;
+    mapping(uint24 => int24) public  feeAmountTickSpacing;
+    int24 public TICK_SPACING;
 
     constructor(address _longTokenAddress, address _shortTokenAddress, uint256 _startRange, uint256 _endRange)  {
         longToken = ILongToken(_longTokenAddress);
         shortToken = IShortToken(_shortTokenAddress);
         startRange = _startRange;
         endRange = _endRange;
+
+        feeAmountTickSpacing[500] = 10;
+        feeAmountTickSpacing[3000] = 60;
+        feeAmountTickSpacing[10000] = 200;
     }
 
     function mintLongShort(uint256 amount) public {
@@ -96,9 +102,10 @@ contract ScalarMarketVault  {
         shortToken.mint(msg.sender, amount*10**18); 
     }
 
-    function createUniPool(address tokenA, address tokenB, uint24 fee) public returns (address){
+    function createUniPool(uint24 fee) public returns (address){
         poolFee = fee;
-        POOL_ADDRESS = uniswapV3Factory.createPool(tokenA, tokenB, poolFee);
+        TICK_SPACING = feeAmountTickSpacing[fee];
+        POOL_ADDRESS = uniswapV3Factory.createPool(address(longToken),address(shortToken), poolFee);
         require(POOL_ADDRESS != address(0), "Failed to create Uniswap V3 Pool");
         return POOL_ADDRESS;
     }
@@ -108,21 +115,21 @@ contract ScalarMarketVault  {
         pool.initialize(sqrtPriceX96);
     }
 
-    function mintNewPosition(uint128 amount0Add, uint128 amount1Add) external returns(uint256 tokenId,uint128 liquidity,uint256 amount0, uint256 amount1){
+    function mintNewPosition(uint128 amount0Add, uint128 amount1Add, int24 _tickUpper, int24 _tickLower) external returns(uint256 tokenId,uint128 liquidity,uint256 amount0, uint256 amount1){
         
         INonfungiblePositionManager.MintParams
             memory params = INonfungiblePositionManager.MintParams({
                 token0: address(longToken),
                 token1: address(shortToken),
                 fee: poolFee,
-                tickLower: (MIN_TICK / TICK_SPACING) * TICK_SPACING,
-                tickUpper: (MAX_TICK / TICK_SPACING) * TICK_SPACING,
+                tickLower: (_tickLower / TICK_SPACING) * TICK_SPACING,
+                tickUpper: (_tickUpper / TICK_SPACING) * TICK_SPACING,
                 amount0Desired: amount0Add,
                 amount1Desired: amount1Add,
                 amount0Min: 0,
                 amount1Min: 0,
                 recipient: msg.sender,
-                deadline: block.timestamp
+                deadline: block.timestamp+12
             });
 
         (tokenId, liquidity, amount0, amount1) = positionManager.mint(params);
@@ -130,12 +137,21 @@ contract ScalarMarketVault  {
        
     }
 
-    
-
+    // Like add to a secondary contract at some point
 
     function getUniSqrtPrice()public view returns(uint160 sqrtPriceX96){
         IUniswapV3Pool pool = IUniswapV3Pool(POOL_ADDRESS);
         (sqrtPriceX96, , , , , , ) = pool.slot0();
+    }
+
+    function translatePrice(uint160 sqrtPriceX96) public pure returns(uint256 gPrice){
+        uint256 priceX96 = FullMath.mulDiv(sqrtPriceX96,sqrtPriceX96,FixedPoint96.Q96);
+        gPrice = (priceX96*1e18)/FixedPoint96.Q96;
+
+    }
+
+    function getTickfromSqrtX96Price(uint160 sqrtPriceX96) public pure returns(int24 tick){
+        tick = TickMath.getTickAtSqrtRatio(sqrtPriceX96);
     }
 
 
