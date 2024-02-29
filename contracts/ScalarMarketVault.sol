@@ -115,27 +115,27 @@ contract ScalarMarketVault  {
         pool.initialize(sqrtPriceX96);
     }
 
-    function mintNewPosition(uint128 amount0Add, uint128 amount1Add, int24 _tickUpper, int24 _tickLower) external returns(uint256 tokenId,uint128 liquidity,uint256 amount0, uint256 amount1){
+    // function mintNewPosition(uint128 amount0Add, uint128 amount1Add, int24 _tickUpper, int24 _tickLower) external returns(uint256 tokenId,uint128 liquidity,uint256 amount0, uint256 amount1){
         
-        INonfungiblePositionManager.MintParams
-            memory params = INonfungiblePositionManager.MintParams({
-                token0: address(longToken),
-                token1: address(shortToken),
-                fee: poolFee,
-                tickLower: (_tickLower / TICK_SPACING) * TICK_SPACING,
-                tickUpper: (_tickUpper / TICK_SPACING) * TICK_SPACING,
-                amount0Desired: amount0Add,
-                amount1Desired: amount1Add,
-                amount0Min: 0,
-                amount1Min: 0,
-                recipient: msg.sender,
-                deadline: block.timestamp+12
-            });
+    //     INonfungiblePositionManager.MintParams
+    //         memory params = INonfungiblePositionManager.MintParams({
+    //             token0: address(longToken),
+    //             token1: address(shortToken),
+    //             fee: poolFee,
+    //             tickLower: TickMath.MIN_TICK,
+    //             tickUpper: TickMath.MAX_TICK,
+    //             amount0Desired: amount0Add,
+    //             amount1Desired: amount1Add,
+    //             amount0Min: 0,
+    //             amount1Min: 0,
+    //             recipient: msg.sender,
+    //             deadline: block.timestamp
+    //         });
 
-        (tokenId, liquidity, amount0, amount1) = positionManager.mint(params);
+    //     (tokenId, liquidity, amount0, amount1) = positionManager.mint(params);
    
        
-    }
+    // }
 
     // Like add to a secondary contract at some point
 
