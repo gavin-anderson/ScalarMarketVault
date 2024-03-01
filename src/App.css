@@ -1,0 +1,47 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f2f5;
+}
+
+
+
+
+/* 
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+} */
+
+
+.mint-form-container {
+  width: 100%; /* Adjust width as necessary */
+  max-width: 600px; /* Maximum width of the container */
+  margin: auto;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background-color: white;
+}
+
+
+/* App.css */
+.wallet-and-form-container {
+  position: absolute;
+  top: 0;
+  right:0;
+}
+
+
+
+/* Add other styles for MintForm or general layout as needed */
