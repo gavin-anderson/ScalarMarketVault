@@ -7,18 +7,31 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract LongToken is ERC20, ERC20Burnable, Ownable {
 
-    address public admin;
+    address private admin;
 
     constructor() ERC20("Long Token", "LNG") Ownable(msg.sender){
         
     }
 
-    function mint(address to, uint256 amount) external {
+    modifier onlyAdmin(){
+        require(msg.sender == admin, "only Admin");
+        _;
+    }
+
+    function setAdmin(address _admin) external onlyOwner{
+        admin =_admin;
+    }
+
+    function mint(address to, uint256 amount) external onlyAdmin {
         _mint(to, amount);
     }
 
-    function burn(address from, uint256 amount) external {
+    function burn(address from, uint256 amount) public onlyAdmin{
         _burn(from, amount);
+    }
+
+    function decimal() external pure returns(uint8 dec){
+        dec =18;
     }
 
 }
