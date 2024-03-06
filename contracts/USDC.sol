@@ -1,18 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract USDC is ERC20 {
-    string private _name = "USDC";
-    string private constant _symbol = "USDC";
-    uint private constant _numTokens = 10_000_000_000;
+contract USDC is ERC20, Ownable {
+  constructor() ERC20('UsdCoin', 'USDC') Ownable(msg.sender){}
 
-    constructor() ERC20(_name, _symbol) {
-        _mint(msg.sender, _numTokens * 10 ** decimals());
-    }
-
-    function decimals() public pure override returns (uint8) {
-        return 6;
-    }
+  function mint(address to, uint256 amount) public onlyOwner {
+    _mint(to, amount);
+  }
 }

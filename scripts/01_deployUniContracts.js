@@ -1,4 +1,4 @@
-const { Contract, ContractFactory, utils, BigNumber } = require("ethers")
+const { ContractFactory, utils } = require("ethers")
 const WETH9 = require("../WETH9.json")
 
 const artifacts = {
@@ -74,7 +74,7 @@ async function main() {
 
   NonfungiblePositionManager = new ContractFactory(artifacts.NonfungiblePositionManager.abi, artifacts.NonfungiblePositionManager.bytecode, owner);
   nonfungiblePositionManager = await NonfungiblePositionManager.deploy(factory.address, weth.address, nonfungibleTokenPositionDescriptor.address);
-  
+
   console.log('WETH_ADDRESS=', `'${weth.address}'`)
   console.log('FACTORY_ADDRESS=', `'${factory.address}'`)
   console.log('SWAP_ROUTER_ADDRESS=', `'${swapRouter.address}'`)
