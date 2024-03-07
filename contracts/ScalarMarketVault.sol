@@ -5,7 +5,7 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  import "@openzeppelin/contracts/access/Ownable.sol"; 
 
-interface IERC20EXT{
+interface IERC20EXT is IERC20{
     function decimals() external pure returns (uint8);
     function mint(address to, uint256 amount) external;
 }
@@ -14,7 +14,7 @@ interface IERC20EXT{
 contract ScalarMarketVault is Ownable{
     IERC20EXT public longToken;
     IERC20EXT public shortToken;
-    IERC20 public usdcToken;
+    IERC20EXT public usdcToken;
 
     address public POOL_ADDRESS;
     
@@ -32,7 +32,7 @@ contract ScalarMarketVault is Ownable{
     constructor(address _longTokenAddress, address _shortTokenAddress, address _usdcTokenAddress, uint256 _startRange, uint256 _endRange) Ownable(msg.sender){
         longToken = IERC20EXT(_longTokenAddress);
         shortToken = IERC20EXT(_shortTokenAddress);
-        usdcToken = IERC20(_usdcTokenAddress);
+        usdcToken = IERC20EXT(_usdcTokenAddress);
         startRange = _startRange;
         endRange = _endRange;
 
@@ -43,7 +43,7 @@ contract ScalarMarketVault is Ownable{
 
     function mintLongShort(address recipient, uint256 amountIn) public {
 
-        require(usdcToken.transferFrom(recipient, address(this), amountIn*10**6), "USDC transfer failed");
+        require(usdcToken.transferFrom(recipient, address(this), amountIn*10**usdcToken.decimals()), "USDC transfer failed");
 
         longToken.mint(recipient, amountIn*10**longToken.decimals()); 
         shortToken.mint(recipient, amountIn*10**shortToken.decimals()); 

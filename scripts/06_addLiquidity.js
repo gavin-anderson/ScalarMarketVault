@@ -85,13 +85,14 @@ async function main() {
   }
   const position = new Position({
     pool: pool,
-    liquidity: ethers.utils.parseEther('100000'),
+    liquidity: ethers.utils.parseEther('10000'),
     tickLower: nearestUsableTick(poolData.tick, poolData.tickSpacing) - poolData.tickSpacing * 2,
     tickUpper: nearestUsableTick(poolData.tick, poolData.tickSpacing) + poolData.tickSpacing * 2,
   })
 
   const { amount0: amount0Desired, amount1: amount1Desired} = position.mintAmounts
-
+  
+  console.log('Amount to Add =', `'${amount0Desired.toString()}'`)
 
   params = {
     token0: _token0,
