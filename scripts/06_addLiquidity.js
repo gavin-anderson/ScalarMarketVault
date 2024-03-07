@@ -20,9 +20,11 @@ const artifacts = {
   ShortToken: require("../artifacts/contracts/ShortToken.sol/ShortToken.json")
 };
 
-const { Contract } = require("ethers")
-const { Token } = require('@uniswap/sdk-core')
-const { Pool, Position, nearestUsableTick } = require('@uniswap/v3-sdk')
+const { Contract } = require("ethers");
+const { Token } = require('@uniswap/sdk-core');
+const { Pool, Position, nearestUsableTick } = require('@uniswap/v3-sdk');
+
+const { checkTokenHexOrder } = require("./checkTokens");
 
 async function getPoolData(poolContract) {
   const [tickSpacing, fee, liquidity, slot0] = await Promise.all([
@@ -30,7 +32,7 @@ async function getPoolData(poolContract) {
     poolContract.fee(),
     poolContract.liquidity(),
     poolContract.slot0(),
-  ])
+  ]);
 
   return {
     tickSpacing: tickSpacing,
@@ -45,28 +47,42 @@ async function main() {
   const [owner, signer2] = await ethers.getSigners();
   const provider = waffle.provider;
 
-  const LongTokenContract = new Contract(LONG_TOKEN_ADDRESS,artifacts.LongToken.abi,provider)
-  const ShortTokenContract = new Contract(SHORT_TOKEN_ADDRESS,artifacts.ShortToken.abi,provider)
+  const LongTokenContract = new Contract(LONG_TOKEN_ADDRESS,artifacts.LongToken.abi,provider);
+  const ShortTokenContract = new Contract(SHORT_TOKEN_ADDRESS,artifacts.ShortToken.abi,provider);
 
-  await LongTokenContract.connect(signer2).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'))
-  await ShortTokenContract.connect(signer2).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'))
+  await LongTokenContract.connect(signer2).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'));
+  await ShortTokenContract.connect(signer2).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'));
 
-  const poolContract = new Contract(LONG_SHORT_500, artifacts.UniswapV3Pool.abi, provider)
+  const poolContract = new Contract(LONG_SHORT_500, artifacts.UniswapV3Pool.abi, provider);
 
-  const poolData = await getPoolData(poolContract)
+  const poolData = await getPoolData(poolContract);
 
-  const LongToken = new Token(31337, LONG_TOKEN_ADDRESS, 18, 'LNG', 'Long Token')
-  const ShortToken = new Token(31337, SHORT_TOKEN_ADDRESS, 18, 'SSHHOORRTT', 'Short Token')
+  const LongToken = new Token(31337, LONG_TOKEN_ADDRESS, 18, 'LNG', 'Long Token');
+  const ShortToken = new Token(31337, SHORT_TOKEN_ADDRESS, 18, 'SSHHOORRTT', 'Short Token');
 
-  const pool = new Pool(
-    ShortToken,
-    LongToken,
-    poolData.fee,
-    poolData.sqrtPriceX96.toString(),
-    poolData.liquidity.toString(),
-    poolData.tick
-  )
+  [_token0,_token1] = await checkTokenHexOrder(LONG_TOKEN_ADDRESS,SHORT_TOKEN_ADDRESS);
 
+  let pool;
+  if(_token0 ==LongToken.address){
+    pool = new Pool(
+      LongToken,
+      ShortToken,
+      poolData.fee,
+      poolData.sqrtPriceX96.toString(),
+      poolData.liquidity.toString(),
+      poolData.tick
+    )
+  }else{ 
+    pool = new Pool(
+      LongToken,
+      ShortToken,
+      poolData.fee,
+      poolData.sqrtPriceX96.toString(),
+      poolData.liquidity.toString(),
+      poolData.tick
+    )
+
+  }
   const position = new Position({
     pool: pool,
     liquidity: ethers.utils.parseEther('100000'),
@@ -78,8 +94,8 @@ async function main() {
 
 
   params = {
-    token0: SHORT_TOKEN_ADDRESS,
-    token1: LONG_TOKEN_ADDRESS,
+    token0: _token0,
+    token1: _token1,
     fee: poolData.fee,
     tickLower: nearestUsableTick(poolData.tick, poolData.tickSpacing) - poolData.tickSpacing * 2,
     tickUpper: nearestUsableTick(poolData.tick, poolData.tickSpacing) + poolData.tickSpacing * 2,
