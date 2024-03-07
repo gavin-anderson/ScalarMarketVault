@@ -3,8 +3,10 @@ const { ethers } = require("hardhat");
 const IUniswapV3PoolABI = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json').abi;
 const SwapRouterABI = require('@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json').abi;
 const ERC20ABI = require('../ERC20.json'); 
-const { getPoolImmutables, getPoolState } = require('./helpers')
-
+const { getPoolImmutables, getPoolState } = require('./helpers');
+const {checkTokenHexOrder} = require("./checkTokens");
+LONG_TOKEN_ADDRESS= '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
+SHORT_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
 async function main() {
     // Use Hardhat's provider and signers
     const [owner, signer2] = await ethers.getSigners();
@@ -18,35 +20,25 @@ async function main() {
     const poolContract = new ethers.Contract(LONG_SHORT_500, IUniswapV3PoolABI, provider);
     const swapRouterContract = new ethers.Contract(swapRouterAddress, SwapRouterABI, provider);
 
- 
-    const name0 = 'USDT';
-    const symbol0 = 'USDT';
-    const decimals0 = 18;
-    const address0 = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853';
-
-    const name1 = 'USDC';
-    const symbol1 = 'USDC';
-    const decimals1 = 18;
-    const address1 = '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'; 
 
     // Define the swap parameters
-    const inputAmount = ethers.utils.parseUnits("1", decimals0);
+    const inputAmount = ethers.utils.parseUnits("1", 18);
     const approvalAmount = inputAmount.mul(100000);
 
-    // Approve the SwapRouter to spend token
-    // const tokenContract0 = new ethers.Contract(address0, ERC20ABI, provider);
-    const tokenContract1 = new ethers.Contract(address1, ERC20ABI, provider);
+    // Figure out which is token1 and which is token0
+    [_token0,_token1] = await checkTokenHexOrder(LONG_TOKEN_ADDRESS,SHORT_TOKEN_ADDRESS);
 
-    // await tokenContract0.connect(signer2).approve(swapRouterAddress, approvalAmount);
-    await tokenContract1.connect(signer2).approve(swapRouterAddress, approvalAmount);
+    // Approve the SwapRouter to spend token
+    const tokenContract = new ethers.Contract(_token0, ERC20ABI, provider);
+    await tokenContract.connect(signer2).approve(swapRouterAddress, approvalAmount);
 
     // Set up swap parameters
     const immutables = await getPoolImmutables(poolContract);
     const state = await getPoolState(poolContract);
 
     const params = {
-        tokenIn: immutables.token1,
-        tokenOut: immutables.token0,
+        tokenIn: immutables.token0,
+        tokenOut: immutables.token1,
         fee: 500,
         recipient: signer2.address,
         deadline: Math.floor(Date.now() / 1000) + (60 * 10),
