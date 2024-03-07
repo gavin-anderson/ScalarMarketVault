@@ -1,5 +1,5 @@
 // pool
-USDT_USDC_500= '0x1FA8DDa81477A5b6FA1b2e149e93ed9C7928992F'
+LONG_SHORT_500= '0xD8Dc8176F0fC3668527445463bCb6089AbC2CD82'
 
 const UniswapV3Pool = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json")
 const { Contract } = require("ethers")
@@ -24,7 +24,7 @@ async function getPoolData(poolContract) {
 
 async function main() {
   const provider = waffle.provider;
-  const poolContract = new Contract(USDT_USDC_500, UniswapV3Pool.abi, provider)
+  const poolContract = new Contract(LONG_SHORT_500, UniswapV3Pool.abi, provider)
   const poolData = await getPoolData(poolContract)
   console.log('poolData', poolData)
 }

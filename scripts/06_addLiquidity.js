@@ -7,18 +7,17 @@ POSITION_DESCRIPTOR_ADDRESS= '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
 POSITION_MANAGER_ADDRESS= '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707'
 
 // Pool addresses
-USDT_USDC_500= '0x1FA8DDa81477A5b6FA1b2e149e93ed9C7928992F'
+LONG_SHORT_500= '0xD8Dc8176F0fC3668527445463bCb6089AbC2CD82'
 
 // Token addresses
-TETHER_ADDRESS= '0x0165878A594ca255338adfa4d48449f69242Eb8F'
-USDC_ADDRESS= '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
-WRAPPED_BITCOIN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
+LONG_TOKEN_ADDRESS= '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
+SHORT_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
 
 const artifacts = {
   NonfungiblePositionManager: require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json"),
-  Usdt: require("../artifacts/contracts/Tether.sol/Tether.json"),
-  Usdc: require("../artifacts/contracts/UsdCoin.sol/UsdCoin.json"),
   UniswapV3Pool: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json"),
+  LongToken: require("../artifacts/contracts/LongToken.sol/LongToken.json"),
+  ShortToken: require("../artifacts/contracts/ShortToken.sol/ShortToken.json")
 };
 
 const { Contract } = require("ethers")
@@ -46,22 +45,22 @@ async function main() {
   const [owner, signer2] = await ethers.getSigners();
   const provider = waffle.provider;
 
-  const usdtContract = new Contract(TETHER_ADDRESS,artifacts.Usdt.abi,provider)
-  const usdcContract = new Contract(USDC_ADDRESS,artifacts.Usdc.abi,provider)
+  const LongTokenContract = new Contract(LONG_TOKEN_ADDRESS,artifacts.LongToken.abi,provider)
+  const ShortTokenContract = new Contract(SHORT_TOKEN_ADDRESS,artifacts.ShortToken.abi,provider)
 
-  await usdtContract.connect(signer2).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'))
-  await usdcContract.connect(signer2).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'))
+  await LongTokenContract.connect(signer2).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'))
+  await ShortTokenContract.connect(signer2).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'))
 
-  const poolContract = new Contract(USDT_USDC_500, artifacts.UniswapV3Pool.abi, provider)
+  const poolContract = new Contract(LONG_SHORT_500, artifacts.UniswapV3Pool.abi, provider)
 
   const poolData = await getPoolData(poolContract)
 
-  const UsdtToken = new Token(31337, TETHER_ADDRESS, 18, 'USDT', 'Tether')
-  const UsdcToken = new Token(31337, USDC_ADDRESS, 18, 'USDC', 'UsdCoin')
+  const LongToken = new Token(31337, LONG_TOKEN_ADDRESS, 18, 'LNG', 'Long Token')
+  const ShortToken = new Token(31337, SHORT_TOKEN_ADDRESS, 18, 'SSHHOORRTT', 'Short Token')
 
   const pool = new Pool(
-    UsdtToken,
-    UsdcToken,
+    ShortToken,
+    LongToken,
     poolData.fee,
     poolData.sqrtPriceX96.toString(),
     poolData.liquidity.toString(),
@@ -79,8 +78,8 @@ async function main() {
 
 
   params = {
-    token0: TETHER_ADDRESS,
-    token1: USDC_ADDRESS,
+    token0: SHORT_TOKEN_ADDRESS,
+    token1: LONG_TOKEN_ADDRESS,
     fee: poolData.fee,
     tickLower: nearestUsableTick(poolData.tick, poolData.tickSpacing) - poolData.tickSpacing * 2,
     tickUpper: nearestUsableTick(poolData.tick, poolData.tickSpacing) + poolData.tickSpacing * 2,

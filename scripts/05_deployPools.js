@@ -1,7 +1,6 @@
 // Token addresses
-TETHER_ADDRESS= '0x0165878A594ca255338adfa4d48449f69242Eb8F'
-USDC_ADDRESS= '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
-WRAPPED_BITCOIN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
+LONG_TOKEN_ADDRESS= '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
+SHORT_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
 
 // Uniswap contract address
 WETH_ADDRESS= '0x5FbDB2315678afecb367f032d93F642f64180aa3'
@@ -63,8 +62,8 @@ async function deployPool(token0, token1, fee, price) {
 
 
 async function main() {
-  const usdtUsdc500 = await deployPool(TETHER_ADDRESS, USDC_ADDRESS, 500, encodePriceSqrt(1, 1))
-  console.log('USDT_USDC_500=', `'${usdtUsdc500}'`)
+  const long_short_500 = await deployPool(SHORT_TOKEN_ADDRESS, LONG_TOKEN_ADDRESS, 500, encodePriceSqrt(1, 1))
+  console.log('LONG_SHORT_500=', `'${long_short_500}'`)
 }
 
 /*

@@ -11,11 +11,11 @@ async function main() {
     const provider = waffle.provider;
 
     // Example addresses, replace these with your local Hardhat deployed addresses
-    const poolAddress = '0x1FA8DDa81477A5b6FA1b2e149e93ed9C7928992F'; // Your local Uniswap Pool address
+    const LONG_SHORT_500= '0xD8Dc8176F0fC3668527445463bCb6089AbC2CD82' // Your local Uniswap Pool address
     const swapRouterAddress = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'; // Your local Uniswap SwapRouter address
 
     // Initialize contracts with the local signer
-    const poolContract = new ethers.Contract(poolAddress, IUniswapV3PoolABI, provider);
+    const poolContract = new ethers.Contract(LONG_SHORT_500, IUniswapV3PoolABI, provider);
     const swapRouterContract = new ethers.Contract(swapRouterAddress, SwapRouterABI, provider);
 
  

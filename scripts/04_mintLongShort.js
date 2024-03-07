@@ -1,7 +1,7 @@
 const { Contract, utils } = require("ethers")
 
-VAULT_ADDRESS= '0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44'
-USDC_ADDRESS= '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e';
+VAULT_ADDRESS= '0x610178dA211FEF7D417bC0e6FeD39F05609AD788'
+USDC_ADDRESS= '0x0165878A594ca255338adfa4d48449f69242Eb8F'
 
 
 const artifacts = {
@@ -22,10 +22,6 @@ async function main() {
     // Connect to Vault and Mint Long Short Tokens
     const ScalarMarketVaultContract = new Contract(VAULT_ADDRESS, artifacts.ScalarVault.abi, provider);
     await ScalarMarketVaultContract.connect(signer2).mintLongShort(signer2.address, "100");
-
-    // console.log('LONG_TOKEN_ADDRESS=', `'${longtoken.address}'`)
-    // console.log('SHORT_TOKEN_ADDRESS=', `'${shorttoken.address}'`)
-    // console.log('USDC_ADDRESS=', `'${usdc.address}'`)
 
 }
 main()
