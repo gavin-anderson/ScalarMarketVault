@@ -23,7 +23,22 @@ async function main() {
 
     // Connect to Vault and Mint Long Short Tokens
     const ScalarMarketVaultContract = new Contract(VAULT_ADDRESS, artifacts.ScalarVault.abi, provider);
-    await ScalarMarketVaultContract.connect(signer2).mintLongShort(signer2.address, inputAmount);
+    // event Listener example hardhat node doesn't support or I'm dumb
+    ScalarMarketVaultContract.on("MintLongShort", (recipient, amountIn, amountOut) => {
+        let info = {
+            recipient: recipient,
+            amountIn: ethers.utils.formatUint(amountIn,6),
+            amountOut: ethers.utils.parseUnits(amountOut,18)
+        }
+        console.log(`Event Caught! Recipient: ${info.recipient}, USDC: ${info.amountIn}, Long: ${info.amountOut}, Short: ${info.amountOut}`);
+    });
+
+    const tx = await ScalarMarketVaultContract.connect(signer2).mintLongShort(signer2.address, inputAmount);
+    await tx.wait();
+    console.log(`VAULT_ADDRESS: ${ScalarMarketVaultContract.address}`);
+
+
+
 
 }
 main()

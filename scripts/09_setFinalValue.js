@@ -14,7 +14,6 @@ async function main() {
     // Connect to Vault and Mint Long Short Tokens
     const ScalarMarketVaultContract = new Contract(VAULT_ADDRESS, ScalarVault.abi, provider);
     await ScalarMarketVaultContract.connect(owner).setFinalValue(5);
-    await ScalarMarketVaultContract.connect(owner).setFinalLongPrice();
 
 }
 main()
