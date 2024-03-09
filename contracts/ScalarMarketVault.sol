@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 interface IERC20EXT is IERC20{
     function decimals() external pure returns (uint8);
     function mint(address to, uint256 amount) external;
+    function burn(address from, uint256 amount) external;
 }
 
 
@@ -19,10 +20,14 @@ contract ScalarMarketVault is Ownable{
     address public POOL_ADDRESS;
     
     uint256 public BASE = 1000;
+
     uint256 public longPrice;
 
     uint256 public startRange;
     uint256 public endRange;
+    uint256 public fValue;
+
+
 
     uint24 public poolFee;
 
@@ -43,14 +48,43 @@ contract ScalarMarketVault is Ownable{
 
     function mintLongShort(address recipient, uint256 amountIn) public {
 
-        require(usdcToken.transferFrom(recipient, address(this), amountIn*10**usdcToken.decimals()), "USDC transfer failed");
+        require(usdcToken.transferFrom(msg.sender, address(this), amountIn), "USDC transfer failed");
 
-        longToken.mint(recipient, amountIn*10**longToken.decimals()); 
-        shortToken.mint(recipient, amountIn*10**shortToken.decimals()); 
+        longToken.mint(recipient, amountIn*10**12); 
+        shortToken.mint(recipient, amountIn*10**12); 
     }
 
     function setPoolAddress(address _poolAddress)external onlyOwner{
         POOL_ADDRESS = _poolAddress;
+    }
+
+    // Once Set needs to be stuck
+    function setFinalValue(uint256 _fValue) external onlyOwner{
+        if (_fValue<=startRange){
+            fValue=startRange;
+        }else if (_fValue>=endRange){
+            fValue = endRange;
+        }else{
+            fValue=_fValue;
+        }
+    }
+    // Can only be called once value is set
+    function finalRedeem(uint256 amountLIn, uint256 amountSIn) external{
+
+
+        uint256 amountOut =(longPrice*amountLIn + (BASE-longPrice)*amountSIn)/BASE;
+        require(longToken.transferFrom(msg.sender, address(this), amountLIn));
+        require(shortToken.transferFrom(msg.sender, address(this), amountSIn));
+
+        longToken.burn(address(this),longToken.balanceOf(address(this)));
+        shortToken.burn(address(this),shortToken.balanceOf(address(this)));
+
+        usdcToken.transfer(msg.sender,amountOut/10**12);
+
+    }
+    // Can only be called once value is set
+    function setFinalLongPrice() public {
+        longPrice = ((fValue-startRange)*BASE/(endRange-startRange));
     }
 
 

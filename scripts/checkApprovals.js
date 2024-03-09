@@ -10,6 +10,7 @@ const {Contract} = require("ethers");
 
 const artifacts = {
     SwapRouter: require("@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json"),
+    Vault : require("../artifacts/contracts/ScalarMarketVault.sol/ScalarMarketVault.json"),
     LongToken: require("../artifacts/contracts/LongToken.sol/LongToken.json"),
     ShortToken: require("../artifacts/contracts/ShortToken.sol/ShortToken.json"),
     USDCToken: require("../artifacts/contracts/USDC.sol/USDC.json")
@@ -19,17 +20,29 @@ const artifacts = {
 
 async function main(){
 
-    const [signer2] = await ethers.getSigners();
+    const [owner,signer2] = await ethers.getSigners();
+    console.log(signer2.address)
     const provider = waffle.provider;
     const LongToken = new Contract(LONG_TOKEN_ADDRESS, artifacts.LongToken.abi, provider);
     const ShortToken = new Contract(SHORT_TOKEN_ADDRESS, artifacts.ShortToken.abi, provider);
     const USDCToken = new Contract(USDC_ADDRESS,artifacts.USDCToken.abi,provider);
     const allowedL = await LongToken.connect(signer2).allowance(signer2.address,swapRouterAddress);
     const allowedS = await ShortToken.connect(signer2).allowance(signer2.address,swapRouterAddress);
-    const allowedUC = await USDCToken.connect(signer2).allowance(signer2.address,VAULT_ADDRESS);
+    const allowedUC = await USDCToken.connect(signer2).allowance(signer2.address,swapRouterAddress);
+
+    const allowedVL = await LongToken.connect(signer2).allowance(signer2.address,VAULT_ADDRESS);
+    const allowedVS = await ShortToken.connect(signer2).allowance(signer2.address,VAULT_ADDRESS);
+    const allowedVUC = await USDCToken.connect(signer2).allowance(signer2.address,VAULT_ADDRESS);
+
+    console.log("Swap Router: ");
     console.log(`Allowed Long:  ${allowedL}`);
     console.log(`Allowed Short:  ${allowedS}`);
     console.log(`Allowed USDC:  ${allowedUC}`);
+
+    console.log("Vault: ");
+    console.log(`Allowed Long:  ${allowedVL}`);
+    console.log(`Allowed Short:  ${allowedVS}`);
+    console.log(`Allowed USDC:  ${allowedVUC}`);
 
 }
 

@@ -30,8 +30,4 @@ contract LongToken is ERC20, ERC20Burnable, Ownable {
         _burn(from, amount);
     }
 
-    // function decimals() external pure returns(uint8){
-    //     return 18;
-    // }
-
 }
