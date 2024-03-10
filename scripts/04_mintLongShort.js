@@ -1,7 +1,7 @@
 const { Contract, utils } = require("ethers")
 
-VAULT_ADDRESS = '0x610178dA211FEF7D417bC0e6FeD39F05609AD788'
-USDC_ADDRESS = '0x0165878A594ca255338adfa4d48449f69242Eb8F'
+VAULT_ADDRESS= '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
+USDC_ADDRESS= '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
 
 
 const artifacts = {
@@ -35,7 +35,6 @@ async function main() {
 
     const tx = await ScalarMarketVaultContract.connect(signer2).mintLongShort(signer2.address, inputAmount);
     await tx.wait();
-    console.log(`VAULT_ADDRESS: ${ScalarMarketVaultContract.address}`);
 
 
 

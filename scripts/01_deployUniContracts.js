@@ -7,6 +7,7 @@ const artifacts = {
   NFTDescriptor: require("@uniswap/v3-periphery/artifacts/contracts/libraries/NFTDescriptor.sol/NFTDescriptor.json"),
   NonfungibleTokenPositionDescriptor: require("@uniswap/v3-periphery/artifacts/contracts/NonfungibleTokenPositionDescriptor.sol/NonfungibleTokenPositionDescriptor.json"),
   NonfungiblePositionManager: require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json"),
+  QuoterV2: require("@uniswap/v3-periphery/artifacts/contracts/lens/QuoterV2.sol/QuoterV2.json"),
   WETH9,
 };
 
@@ -50,6 +51,9 @@ async function main() {
   NFTDescriptor = new ContractFactory(artifacts.NFTDescriptor.abi, artifacts.NFTDescriptor.bytecode, owner);
   nftDescriptor = await NFTDescriptor.deploy();
 
+  QuoterV2 = new ContractFactory(artifacts.QuoterV2.abi,artifacts.QuoterV2.bytecode,owner);
+  quoterV2 = await QuoterV2.deploy(factory.address, weth.address);
+
   const linkedBytecode = linkLibraries(
     {
       bytecode: artifacts.NonfungibleTokenPositionDescriptor.bytecode,
@@ -81,6 +85,7 @@ async function main() {
   console.log('NFT_DESCRIPTOR_ADDRESS=', `'${nftDescriptor.address}'`)
   console.log('POSITION_DESCRIPTOR_ADDRESS=', `'${nonfungibleTokenPositionDescriptor.address}'`)
   console.log('POSITION_MANAGER_ADDRESS=', `'${nonfungiblePositionManager.address}'`)
+  console.log('QUOTERV2_ADDRESS =', `'${quoterV2.address}'`);
 }
 
 /*

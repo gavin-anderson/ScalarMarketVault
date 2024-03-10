@@ -1,5 +1,5 @@
 // pool
-LONG_SHORT_500= '0xD8Dc8176F0fC3668527445463bCb6089AbC2CD82'
+LONG_SHORT_500= '0xfF87C979374657A843e2640EDC7B121103E9db94'
 
 const UniswapV3Pool = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json")
 const { Contract } = require("ethers")

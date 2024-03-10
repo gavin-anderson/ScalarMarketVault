@@ -1,13 +1,13 @@
 // Import ethers from Hardhat package
 const { ethers } = require("hardhat");
-LONG_TOKEN_ADDRESS= '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
-SHORT_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
+LONG_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
+SHORT_TOKEN_ADDRESS= '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318'
 const {checkTokenHexOrder} = require("./checkTokens");
 // Uniswap V3 Pool ABI
 const IUniswapV3PoolABI = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json').abi;
 
 // Pool address - replace this with the actual pool address
-const LONG_SHORT_500= '0xD8Dc8176F0fC3668527445463bCb6089AbC2CD82'
+LONG_SHORT_500= '0xfF87C979374657A843e2640EDC7B121103E9db94'
 
 async function main() {
     // Use Hardhat's default provider

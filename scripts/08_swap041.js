@@ -5,17 +5,21 @@ const SwapRouterABI = require('@uniswap/v3-periphery/artifacts/contracts/interfa
 const ERC20ABI = require('../ERC20.json'); 
 const { getPoolImmutables, getPoolState } = require('./helpers');
 const {checkTokenHexOrder} = require("./checkTokens");
-LONG_TOKEN_ADDRESS= '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
-SHORT_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
+
+LONG_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
+SHORT_TOKEN_ADDRESS= '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318'
+
+LONG_SHORT_500= '0xfF87C979374657A843e2640EDC7B121103E9db94';
+swapRouterAddress = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'; 
+
+
 async function main() {
     // Use Hardhat's provider and signers
     const [owner, signer2] = await ethers.getSigners();
     const provider = waffle.provider;
 
     // Example addresses, replace these with your local Hardhat deployed addresses
-    const LONG_SHORT_500= '0xD8Dc8176F0fC3668527445463bCb6089AbC2CD82' // Your local Uniswap Pool address
-    const swapRouterAddress = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'; // Your local Uniswap SwapRouter address
-
+    
     // Initialize contracts with the local signer
     const poolContract = new ethers.Contract(LONG_SHORT_500, IUniswapV3PoolABI, provider);
     const swapRouterContract = new ethers.Contract(swapRouterAddress, SwapRouterABI, provider);
@@ -52,9 +56,15 @@ async function main() {
         gasLimit: ethers.utils.hexlify(1000000)
     });
 
+
     console.log(`Transaction hash: ${transaction.hash}`);
     const receipt = await transaction.wait();
     console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+    if(_token0 == LONG_TOKEN_ADDRESS){
+        console.log(`Swapped Long for Short`);
+    }else{
+        console.log(`Swapper Short for Long`);
+    }
 }
 
 main()

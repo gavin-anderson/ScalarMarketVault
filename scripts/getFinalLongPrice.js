@@ -1,6 +1,6 @@
 const { Contract, utils } = require("ethers")
 
-VAULT_ADDRESS = '0x610178dA211FEF7D417bC0e6FeD39F05609AD788'
+VAULT_ADDRESS= '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
 ScalarVault = require("../artifacts/contracts/ScalarMarketVault.sol/ScalarMarketVault.json")
 async function main() {
     const [owner, signer2] = await ethers.getSigners();
