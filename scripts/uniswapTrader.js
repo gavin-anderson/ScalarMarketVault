@@ -1,4 +1,4 @@
-// Import ethers from Hardhat, not directly from the ethers package
+// Reference piece of making swaps.
 const { ethers } = require("hardhat");
 const IUniswapV3PoolABI = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json').abi;
 const SwapRouterABI = require('@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json').abi;
