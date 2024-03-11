@@ -3,8 +3,8 @@ const { ethers } = require("hardhat");
 const IUniswapV3PoolABI = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json').abi;
 const SwapRouterABI = require('@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json').abi;
 const ERC20ABI = require('../ERC20.json'); 
-const { getPoolImmutables, getPoolState } = require('./helpers');
-const {checkTokenHexOrder} = require("./checkTokens");
+const { getPoolImmutables, getPoolState } = require('../lib/helpers');
+const {checkTokenHexOrder} = require("../lib/checkTokens");
 LONG_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
 SHORT_TOKEN_ADDRESS= '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318'
 async function main() {
@@ -56,9 +56,9 @@ async function main() {
     const receipt = await transaction.wait();
     console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
     if(_token0 == LONG_TOKEN_ADDRESS){
-        console.log(`Swapped Long for Short`);
+        console.log(`Swapped Short for Long`);
     }else{
-        console.log(`Swapper Short for Long`);
+        console.log(`Swapped Long for Short`);
     }
 }
 

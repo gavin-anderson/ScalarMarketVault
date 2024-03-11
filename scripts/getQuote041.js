@@ -6,8 +6,8 @@ SHORT_TOKEN_ADDRESS= '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318'
 QuoterV2 = require("@uniswap/v3-periphery/artifacts/contracts/lens/QuoterV2.sol/QuoterV2.json");
 const IUniswapV3Pool = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json');
 const { ethers } = require("hardhat");
-const { checkTokenHexOrder } = require("./checkTokens");
-const { getPoolImmutables, getPoolState } = require('./helpers');
+const { checkTokenHexOrder } = require("../lib/checkTokens");
+const { getPoolImmutables, getPoolState } = require('../lib/helpers');
 
 
 
@@ -18,6 +18,7 @@ async function main() {
     [_token0, _token1] = await checkTokenHexOrder(LONG_TOKEN_ADDRESS, SHORT_TOKEN_ADDRESS);
 
     const poolContract = new ethers.Contract(LONG_SHORT_500, IUniswapV3Pool.abi, provider);
+    const { sqrtPriceX96 } = await poolContract.slot0();
     const QuoterContract = new ethers.Contract(QUOTERV2_ADDRESS, QuoterV2.abi, provider);
 
     const inputAmount = ethers.utils.parseEther("1")
@@ -34,7 +35,7 @@ async function main() {
         sqrtPriceLimitX96: 0,
     };
 
-    const recipient = await QuoterContract.connect(signer2).quoteExactInputSingle(
+    const recipient = await QuoterContract.connect(signer2).callStatic.quoteExactInputSingle(
         params, {
             gasLimit: ethers.utils.hexlify(1000000)
         }
@@ -50,11 +51,16 @@ async function main() {
         token00 = SHORT_TOKEN_ADDRESS;
         token11 = LONG_TOKEN_ADDRESS;
     }
+    const priceBefore = sqrtPriceX96**2/2**192;
+    const priceAfter = recipient.sqrtPriceX96After**2/2**192;
 
     console.log(recipient);
-    // console.log(`Amount In: ${inputAmount}  of ${token00} `);
-    // console.log(`Amount Out: ${amountOut}  of ${token11} `);
-    // console.log(`SqrtPriceX96 After: ${sqrtPriceA96After}`);
+    console.log(`Amount In: ${inputAmount/10**18}  of ${token00} `);
+    console.log(`Amount Out: ${recipient.amountOut/10**18}  of ${token11} `);
+    console.log(`Price Before: ${priceBefore}`);
+    console.log(`Price After: ${priceAfter}`);
+    console.log(`ScalarPrice Before: ${priceBefore/(priceBefore+1)}`);
+    console.log(`ScalarPrice After: ${priceAfter/(priceAfter+1)}`);
 
 }
 

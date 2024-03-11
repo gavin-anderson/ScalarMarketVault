@@ -25,7 +25,7 @@ const { Contract } = require("ethers");
 const { Token } = require('@uniswap/sdk-core');
 const { Pool, Position, nearestUsableTick } = require('@uniswap/v3-sdk');
 
-const { checkTokenHexOrder } = require("./checkTokens");
+const { checkTokenHexOrder } = require("../lib/checkTokens");
 
 async function getPoolData(poolContract) {
   const [tickSpacing, fee, liquidity, slot0] = await Promise.all([

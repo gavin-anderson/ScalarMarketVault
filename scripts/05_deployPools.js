@@ -16,7 +16,7 @@ const artifacts = {
   NonfungiblePositionManager: require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json"),
 };
 
-const { checkTokenHexOrder } = require("./checkTokens");
+const { checkTokenHexOrder } = require("../lib/checkTokens");
 
 const { Contract, BigNumber } = require("ethers")
 const bn = require('bignumber.js')
