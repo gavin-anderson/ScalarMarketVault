@@ -12,7 +12,7 @@ async function main() {
   shorttoken = await ShortToken.deploy();
 
   // Mint Tokens
-  await usdc.connect(owner).mint(signer2.address, ethers.utils.parseUnits('100000',6));
+  await usdc.connect(owner).mint(signer2.address, ethers.utils.parseUnits('100',6));
 
   console.log('LONG_TOKEN_ADDRESS=', `'${longtoken.address}'`)
   console.log('SHORT_TOKEN_ADDRESS=', `'${shorttoken.address}'`)

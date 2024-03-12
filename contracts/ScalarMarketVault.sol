@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IERC20EXT is IERC20 {
@@ -15,6 +16,8 @@ contract ScalarMarketVault is Ownable {
     IERC20EXT public longToken;
     IERC20EXT public shortToken;
     IERC20EXT public usdcToken;
+
+    ISwapRouter public immutable swapRouter;
 
     address public POOL_ADDRESS;
 
@@ -34,21 +37,24 @@ contract ScalarMarketVault is Ownable {
 
     // Events
     event MintLongShort(address recipient, uint256 amountIn, uint256 amountOut);
-    event SetPoolAddress(address POOL_ADDRESS);
+    event SetPoolAddress(address POOL_ADDRESS, uint24 poolFee);
     event FinalValueSet(uint256 fValue, bool isFinalValueSet, uint256 longPrice);
     event FinalRedeem(address sender,uint256 amountLIn, uint256 amountRIn, uint256 amountOut);
+    event Redeem(address sender, uint256 amount);
 
-
+    // Errors
     constructor(
         address _longTokenAddress,
         address _shortTokenAddress,
         address _usdcTokenAddress,
+        address _swapRouter,
         uint256 _startRange,
         uint256 _endRange
     ) Ownable(msg.sender) {
         longToken = IERC20EXT(_longTokenAddress);
         shortToken = IERC20EXT(_shortTokenAddress);
         usdcToken = IERC20EXT(_usdcTokenAddress);
+        swapRouter = ISwapRouter(_swapRouter);
         startRange = _startRange;
         endRange = _endRange;
 
@@ -58,19 +64,17 @@ contract ScalarMarketVault is Ownable {
     }
 
     function mintLongShort(address recipient, uint256 amountIn) public {
-        require(
-            usdcToken.transferFrom(msg.sender, address(this), amountIn),
-            "USDC transfer failed"
-        );
+        require(usdcToken.transferFrom(msg.sender, address(this), amountIn),"USDC transfer failed");
         uint256 amountOut = amountIn*10**12;
         longToken.mint(recipient, amountOut);
         shortToken.mint(recipient, amountOut);
         emit MintLongShort(recipient, amountIn, amountOut);
     }
 
-    function setPoolAddress(address _poolAddress) external onlyOwner {
+    function setPoolAddress(address _poolAddress, uint24 _poolfee) external onlyOwner {
         POOL_ADDRESS = _poolAddress;
-        emit SetPoolAddress(POOL_ADDRESS);
+        poolFee = _poolfee;
+        emit SetPoolAddress(POOL_ADDRESS, poolFee);
     }
 
     // Once Set needs to be stuck
@@ -92,18 +96,9 @@ contract ScalarMarketVault is Ownable {
     function finalRedeem(uint256 amountLIn, uint256 amountSIn) external {
         require(isFinalValueSet, "Final Value has not been set");
 
-        uint256 amountOut = (longPrice *
-            amountLIn +
-            (BASE - longPrice) *
-            amountSIn) / BASE;
-        require(
-            longToken.transferFrom(msg.sender, address(this), amountLIn),
-            "Failed to transfer Long Tokens"
-        );
-        require(
-            shortToken.transferFrom(msg.sender, address(this), amountSIn),
-            "Failed to transfer Short Tokens"
-        );
+        uint256 amountOut = (longPrice*amountLIn +(BASE - longPrice)*amountSIn) / BASE;
+        require(longToken.transferFrom(msg.sender, address(this), amountLIn),"Failed to transfer Long Tokens");
+        require(shortToken.transferFrom(msg.sender, address(this), amountSIn),"Failed to transfer Short Tokens");
 
         longToken.burn(address(this), longToken.balanceOf(address(this)));
         shortToken.burn(address(this), shortToken.balanceOf(address(this)));
@@ -114,5 +109,58 @@ contract ScalarMarketVault is Ownable {
     // Can only be called once value is set
     function setFinalLongPrice() internal {
         longPrice = (((fValue - startRange) * BASE) / (endRange - startRange));
+    }
+
+    function redeem(uint256 amount)external {
+        require(longToken.transferFrom(msg.sender, address(this), amount),"Failed to transfer Long Tokens");
+        require(shortToken.transferFrom(msg.sender, address(this), amount),"Failed to transfer Short Tokens");
+
+        longToken.burn(address(this), longToken.balanceOf(address(this)));
+        shortToken.burn(address(this), shortToken.balanceOf(address(this)));
+
+        usdcToken.transfer(msg.sender,amount/10**12);
+        emit Redeem(msg.sender,amount);
+
+    }
+
+    // amountIn is the amount that needs to be swapped.
+    // Should probably track blanaces of USDC and Long short tokens in contract. For instance the left overs from fullSwapRedeem would be used in the second one.
+    function fullSwapRedeem(uint256 _amountIn, uint256 _amountOutMinimum) external returns(uint256 usdcAmountOut){
+        require(longToken.transferFrom(msg.sender, address(this), longToken.balanceOf(msg.sender)),"Failed to transfer Long Tokens");
+        require(shortToken.transferFrom(msg.sender, address(this), shortToken.balanceOf(msg.sender)),"Failed to transfer Short Tokens");
+
+        address _tokenIn;
+        address _tokenOut;
+        if (longToken.balanceOf(address(this))> shortToken.balanceOf(address(this))){
+            _tokenIn = address(longToken);
+            _tokenOut = address(shortToken);
+        }
+        else{
+            _tokenIn = address(shortToken);
+            _tokenOut = address(longToken);
+        }
+        IERC20EXT(_tokenIn).approve(address(swapRouter), _amountIn);
+
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+            tokenIn: _tokenIn,
+            tokenOut: _tokenOut,
+            fee: poolFee,
+            recipient: address(this), 
+            deadline: block.timestamp, 
+            amountIn: _amountIn,
+            amountOutMinimum: _amountOutMinimum,
+            sqrtPriceLimitX96: 0 
+        });
+
+        uint256 amountOut = swapRouter.exactInputSingle(params);
+
+        if(longToken.balanceOf(address(this)) > shortToken.balanceOf(address(this))){
+            usdcAmountOut = shortToken.balanceOf(address(this))/10**12;
+            usdcToken.transfer(msg.sender,usdcAmountOut);
+        }else{
+            usdcAmountOut = longToken.balanceOf(address(this))/10**12;
+            usdcToken.transfer(msg.sender,usdcAmountOut);
+        }
+
     }
 }

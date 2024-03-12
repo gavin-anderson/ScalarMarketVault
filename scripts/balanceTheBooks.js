@@ -1,7 +1,10 @@
+// Figure out what to do with price impact
 LONG_TOKEN_ADDRESS = '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
 SHORT_TOKEN_ADDRESS = '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318'
 LONG_SHORT_500 = '0xfF87C979374657A843e2640EDC7B121103E9db94';
+
 BASE = 1000000;
+
 const { checkBalances } = require("../lib/getBalances");
 const { swap041, swap140, quote041, quote140 } = require("../lib/swaps");
 const { getPoolImmutables, getPoolState } = require('../lib/helpers');

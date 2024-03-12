@@ -1,7 +1,7 @@
 // Token addresses
 LONG_TOKEN_ADDRESS= '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6'
 SHORT_TOKEN_ADDRESS= '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318'
-
+VAULT_ADDRESS = '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
 // Uniswap contract address
 WETH_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
 FACTORY_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
@@ -14,6 +14,7 @@ QUOTERV2_ADDRESS = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
 const artifacts = {
   UniswapV3Factory: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json"),
   NonfungiblePositionManager: require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json"),
+  ScalarVault: require("../artifacts/contracts/ScalarMarketVault.sol/ScalarMarketVault.json")
 };
 
 const { checkTokenHexOrder } = require("../lib/checkTokens");
@@ -65,8 +66,11 @@ async function deployPool(token0, token1, fee, price) {
 
 
 async function main() {
+  const [owner] = await ethers.getSigners();
   [_token0, _token1] = await checkTokenHexOrder(LONG_TOKEN_ADDRESS, SHORT_TOKEN_ADDRESS);
-  const long_short_500 = await deployPool(_token0, _token1, 500, encodePriceSqrt(1, 1))
+  const long_short_500 = await deployPool(_token0, _token1, 500, encodePriceSqrt(1, 1));
+  const vaultContract = new Contract(VAULT_ADDRESS,artifacts.ScalarVault.abi,provider);
+  await vaultContract.connect(owner).setPoolAddress(long_short_500,500);
   console.log('LONG_SHORT_500=', `'${long_short_500}'`)
 }
 
