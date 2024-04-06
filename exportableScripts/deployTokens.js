@@ -1,4 +1,4 @@
-async function deployTokens(owner, signer) {
+async function deployTokens(owner) {
 
     // Init the tokens
     USDC = await ethers.getContractFactory('USDC', owner);
@@ -11,8 +11,6 @@ async function deployTokens(owner, signer) {
     shorttoken = await ShortToken.deploy();
 
     // Mint Tokens
-    await usdc.connect(owner).mint(signer.address, ethers.utils.parseUnits('100', 6));
-
     console.log('LONG_TOKEN_ADDRESS=', `'${longtoken.address}'`)
     console.log('SHORT_TOKEN_ADDRESS=', `'${shorttoken.address}'`)
     console.log('USDC_ADDRESS=', `'${usdc.address}'`)

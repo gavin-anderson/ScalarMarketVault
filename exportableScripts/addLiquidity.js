@@ -77,7 +77,8 @@ async function addLiquidity(input, signer, provider, addresses) {
 
     const { amount0: amount0Desired, amount1: amount1Desired } = position.mintAmounts
 
-    console.log('Amount to Add =', `'${amount0Desired.toString()}'`)
+    console.log('Amount0 to Add =', `'${amount0Desired.toString()} : ${utils.formatEther(amount0Desired.toString())}'`);
+    console.log('Amount1 to Add =', `'${amount1Desired.toString()} : ${utils.formatEther(amount1Desired.toString())}'`);
 
     params = {
         token0: _token0,

@@ -4,6 +4,7 @@ require('dotenv').config();
 const { deployUniContracts } = require('../exportableScripts/deployUniContracts');
 const { deployTokens } = require('../exportableScripts/deployTokens');
 const { deployScalarMarketVault } = require('../exportableScripts/deployScalarMarketVault');
+const { mintUSDC } = require("../exportableScripts/mintUSDC");
 const { mintLongShort } = require('../exportableScripts/mintLongShort');
 const { checkBalances } = require('../lib/getBalances');
 const { deployPools } = require('../exportableScripts/deployPools');
@@ -13,12 +14,12 @@ const { swap041, swap140, quote041, quote140 } = require('../lib/swaps');
 const { setFinalValue } = require("../exportableScripts/setFinalValue");
 const { finalRedeem } = require('../exportableScripts/finalRedeem');
 const { fullSwapRedeem } = require('../exportableScripts/fullSwapRedeem');
-
+// TOO MAKE SURE IT ALL WORKS
 async function main() {
 
     const [owner, signer2] = await ethers.getSigners();
     const provider = waffle.provider;
-    const uniAddresses = await deployUniContracts(signer2);
+    const uniAddresses = await deployUniContracts(owner);
     console.log("-------------------------------------");
 
     const tokenAddresses = await deployTokens(owner, signer2);
@@ -28,7 +29,8 @@ async function main() {
     const scalarMarketAddress = await deployScalarMarketVault(2, 6, owner, provider, addresses);
     addresses['VAULT_ADDRESS'] = scalarMarketAddress;
     console.log("-------------------------------------");
-
+    await mintUSDC("10000",owner,signer2,provider,addresses);
+    
     await mintLongShort("100", signer2, provider, addresses);
     balances = await checkBalances(signer2, provider, addresses);
     console.log(`LongToken: ${balances.LongBalance}`);

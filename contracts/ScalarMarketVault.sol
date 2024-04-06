@@ -63,7 +63,7 @@ contract ScalarMarketVault is Ownable {
         feeAmountTickSpacing[10000] = 200;
     }
 
-    function mintLongShort(address recipient, uint256 amountIn) public {
+    function mintLongShort(address recipient, uint256 amountIn) external {
         require(usdcToken.transferFrom(msg.sender, address(this), amountIn),"USDC transfer failed");
         uint256 amountOut = amountIn*10**12;
         longToken.mint(recipient, amountOut);
