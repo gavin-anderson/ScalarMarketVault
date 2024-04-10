@@ -1,0 +1,6 @@
+.rowContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center; /* Adjust this as needed */
+    gap: 10px; /* Spacing between child elements */
+  }
