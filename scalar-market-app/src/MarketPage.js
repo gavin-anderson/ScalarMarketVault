@@ -2,7 +2,7 @@ import './styles/MarketPage.css';
 import InfiniteScroll from './components/InfiniteScroll.js';
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Button, TextField, Grid, Card, CardContent, Typography,Box } from '@mui/material';
+import { Button, TextField, Grid, Card, CardContent, Typography,Box, Page } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 function MarketPage() {
@@ -75,10 +75,10 @@ function MarketPage() {
 
   return (
 
-    <Card>
-    <CardContent>
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" gutterBottom>
+    <Card >
+    <CardContent >
+      <Box  sx={{ mb: 2 }}>
+        <Typography color= 'inherit'variant="h6" gutterBottom>
           Trending Markets
         </Typography>
         <TextField

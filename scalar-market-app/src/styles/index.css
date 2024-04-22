@@ -7,7 +7,29 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.MuiAppBar-root {
+  background: #FFF; /* Set to white or any preferred color */
+  color: #000; /* Set text color */
+  box-shadow: none; /* Remove default shadow */
+  border-bottom: 1px solid #e0e0e0; /* Add a border to the bottom */
+}
+
+.MuiButton-root {
+  color: #000; /* Set text color */
+}
+
+.MuiButton-root:hover {
+  background-color: transparent; /* Remove the button's hover effect */
+}
+
+.MuiToolbar-root {
+  justify-content: space-between; /* Spread out the content */
+}
+
+.market-header {
+  /* Assuming you want the top banner to look similar to the AppBar */
+  background: #FFF;
+  color: #000;
+  padding: 10px 0; /* Adjust padding as needed */
+  text-align: center; /* Center the content of the header */
 }
