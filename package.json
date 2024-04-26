@@ -19,7 +19,9 @@
     "dotenv": "^16.4.5",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.7.1",
-    "hardhat": "^2.11.2",
     "promisify": "^0.0.3"
+  },
+  "devDependencies": {
+    "hardhat": "^2.22.2"
   }
 }

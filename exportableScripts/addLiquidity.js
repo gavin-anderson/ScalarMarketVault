@@ -27,25 +27,25 @@ async function getPoolData(poolContract) {
     }
 }
 // input needs to be string
-async function addLiquidity(input, signer, provider, addresses) {
+async function addLiquidity(input, signer, provider,LONG_TOKEN_ADDRESS,SHORT_TOKEN_ADDRESS, POSITION_MANAGER_ADDRESS, POOL_ADDRESS) {
 
-    const LongTokenContract = new Contract(addresses.LONG_TOKEN_ADDRESS, artifacts.LongToken.abi, provider);
-    const ShortTokenContract = new Contract(addresses.SHORT_TOKEN_ADDRESS, artifacts.ShortToken.abi, provider);
+    const LongTokenContract = new Contract(LONG_TOKEN_ADDRESS, artifacts.LongToken.abi, provider);
+    const ShortTokenContract = new Contract(SHORT_TOKEN_ADDRESS, artifacts.ShortToken.abi, provider);
 
     const inputAmount = utils.parseEther(input);
     const approveAmount = inputAmount.mul("1000");
 
-    await LongTokenContract.connect(signer).approve(addresses.POSITION_MANAGER_ADDRESS, approveAmount);
-    await ShortTokenContract.connect(signer).approve(addresses.POSITION_MANAGER_ADDRESS, approveAmount);
+    await LongTokenContract.connect(signer).approve(POSITION_MANAGER_ADDRESS, approveAmount);
+    await ShortTokenContract.connect(signer).approve(POSITION_MANAGER_ADDRESS, approveAmount);
 
-    const poolContract = new Contract(addresses.POOL_ADDRESS, artifacts.UniswapV3Pool.abi, provider);
+    const poolContract = new Contract(POOL_ADDRESS, artifacts.UniswapV3Pool.abi, provider);
 
     const poolData = await getPoolData(poolContract);
 
-    const LongToken = new Token(31337, addresses.LONG_TOKEN_ADDRESS, 18, 'LNG', 'Long Token');
-    const ShortToken = new Token(31337, addresses.SHORT_TOKEN_ADDRESS, 18, 'SSHHOORRTT', 'Short Token');
+    const LongToken = new Token(31337, LONG_TOKEN_ADDRESS, 18, 'LNG', 'Long Token');
+    const ShortToken = new Token(31337, SHORT_TOKEN_ADDRESS, 18, 'SSHHOORRTT', 'Short Token');
 
-    [_token0, _token1] = await checkTokenHexOrder(addresses.LONG_TOKEN_ADDRESS, addresses.SHORT_TOKEN_ADDRESS);
+    [_token0, _token1] = await checkTokenHexOrder(LONG_TOKEN_ADDRESS, SHORT_TOKEN_ADDRESS);
 
     let pool;
     if (_token0 == LongToken.address) {
@@ -94,11 +94,19 @@ async function addLiquidity(input, signer, provider, addresses) {
         deadline: Math.floor(Date.now() / 1000) + (60 * 10)
     }
 
-    const nonfungiblePositionManager = new Contract(addresses.POSITION_MANAGER_ADDRESS, artifacts.NonfungiblePositionManager.abi, provider)
+    const nonfungiblePositionManager = new Contract(POSITION_MANAGER_ADDRESS, artifacts.NonfungiblePositionManager.abi, provider)
     const tx = await nonfungiblePositionManager.connect(signer).mint(
         params,
         { gasLimit: '1000000' }
     )
+    const receipt = await tx.wait();
+    for (const event of receipt.events){
+        if (event.event =='IncreaseLiquidity' || event.event === 'Mint') {
+            const tokenId = event.args.tokenId;
+            console.log(`Token ID: ${tokenId.toString()}`);
+            return tokenId;
+        }
+    }
 
 }
 

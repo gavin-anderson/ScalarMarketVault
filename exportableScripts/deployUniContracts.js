@@ -88,15 +88,7 @@ async function deployUniContracts(signer) {
     console.log('POSITION_MANAGER_ADDRESS=', `'${nonfungiblePositionManager.address}'`)
     console.log('QUOTERV2_ADDRESS =', `'${quoterV2.address}'`);
 
-    // let addresses = [
-    //     `WETH_ADDRESS=${weth.address}`,
-    //     `FACTORY_ADDRESS=${factory.address}`,
-    //     `SWAP_ROUTER_ADDRESS=${swapRouter.address}`,
-    //     `NFT_DESCRIPTOR_ADDRESS=${nftDescriptor.address}`,
-    //     `POSITION_DESCRIPTOR_ADDRESS=${nonfungibleTokenPositionDescriptor.address}`,
-    //     `POSITION_MANAGER_ADDRESS=${nonfungiblePositionManager.address}`,
-    //     `QUOTERV2_ADDRESS=${quoterV2.address}`
-    // ]
+
 
     let addresses = {
         WETH_ADDRESS: weth.address,
@@ -106,17 +98,7 @@ async function deployUniContracts(signer) {
         POSITION_DESCRIPTOR_ADDRESS: nonfungibleTokenPositionDescriptor.address,
         POSITION_MANAGER_ADDRESS: nonfungiblePositionManager.address,
         QUOTERV2_ADDRESS: quoterV2.address
-    }
-    
-    // const data = addresses.join('\n');
-    // const writeFile = promisify(fs.writeFile);
-    // const filePath = '../.env';
-    // return writeFile(filePath, data).then(() => {
-    //     console.log('Addresses recorded.');
-    // }).catch((error) => {
-    //     console.error("Error logging addresses", error);
-    //     throw error;
-    // });
+    }    
     return (addresses);
     
 }

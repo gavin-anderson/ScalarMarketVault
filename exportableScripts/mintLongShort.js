@@ -20,7 +20,7 @@ async function mintLongShort(input, signer, provider, addresses) {
 
     // Connect to Vault and Mint Long Short Tokens
     const ScalarMarketVaultContract = new Contract(addresses.VAULT_ADDRESS, artifacts.ScalarVault.abi, provider);
-    // event Listener example hardhat node doesn't support or I'm dumb
+    // event Listener example hardhat node doesn't support or I'm dumb //Nah Im just dumb please ignore!
     ScalarMarketVaultContract.on("MintLongShort", (recipient, amountIn, amountOut) => {
         let info = {
             recipient: recipient,

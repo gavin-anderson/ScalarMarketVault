@@ -14,23 +14,7 @@ async function deployTokens(owner) {
     console.log('LONG_TOKEN_ADDRESS=', `'${longtoken.address}'`)
     console.log('SHORT_TOKEN_ADDRESS=', `'${shorttoken.address}'`)
     console.log('USDC_ADDRESS=', `'${usdc.address}'`)
-
-    // let addresses=[
-    //     `LONG_TOKEN_ADDRESS=${longtoken.address}`,
-    //     `SHORT_TOKEN_ADDRESS=${shorttoken.address}`,
-    //     `USDC_ADDRESS=${usdc.address}`
-    // ]
-
-
-    // const data = address.join('\n');
-    // const writeFile = promisify(fs.writeFile);
-    // const filePath = '../.env';
-    // return writeFile(filePath, data).then(() => {
-    //     console.log('Token addresses recorded.');
-    // }).catch((error) => {
-    //     console.error("Error logging addresses", error);
-    //     throw error;
-    // });
+    
     const addresses = {
         LONG_TOKEN_ADDRESS: longtoken.address,
         SHORT_TOKEN_ADDRESS: shorttoken.address,

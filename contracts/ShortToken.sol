@@ -6,28 +6,31 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ShortToken is ERC20, ERC20Burnable, Ownable {
+    address public vault;
+    address public immutable factory;
 
-    address private admin;
-
-    constructor() ERC20("Short Token", "SSHHOORRTT") Ownable(msg.sender){
-        
+    constructor(address _factory) ERC20("Short Token", "SSHHOORRTT") Ownable(msg.sender) {
+        factory = _factory;
     }
 
-     modifier onlyAdmin(){
-        require(msg.sender == admin, "only Admin");
+    modifier onlyVault() {
+        require(msg.sender == vault, "only Vault");
+        _;
+    }
+    modifier onlyFactory() {
+        require(msg.sender == factory, "only factory");
         _;
     }
 
-    function setAdmin(address _admin) external onlyOwner{
-        admin =_admin;
+    function setVault(address _vault) external onlyFactory {
+        vault = _vault;
     }
 
-    function mint(address to, uint256 amount) external onlyAdmin {
+    function mint(address to, uint256 amount) external onlyVault {
         _mint(to, amount);
     }
 
-    function burn(address from, uint256 amount) public onlyAdmin{
+    function burn(address from, uint256 amount) public onlyVault {
         _burn(from, amount);
     }
-
 }
