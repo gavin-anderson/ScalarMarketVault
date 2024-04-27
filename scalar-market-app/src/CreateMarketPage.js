@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { Button, TextField, Grid, Card, CardContent, Typography } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useCreateMarket } from './scripts/useCreateMarket.js';
 
 
 
 // Form validation schema
 const validationSchema = Yup.object().shape({
     ticker: Yup.string().required('Required'),
-    rangeOpen: Yup.number().required('Required'),
-    rangeClose: Yup.number().required('Required'),
+    rangeOpen: Yup.string().required('Required'),
+    rangeClose: Yup.string().required('Required'),
     expiry: Yup.date().required('Required'),
     description: Yup.string().required('Required'),
 });
@@ -42,6 +43,7 @@ async function submitFormData(formData) {
 }
 
 export function CreateMarket() {
+    const createMarket =useCreateMarket(); // Initialize the hook
     const formik = useFormik({
         initialValues: {
             ticker: '',
@@ -51,14 +53,15 @@ export function CreateMarket() {
             description: '',
         },
         validationSchema: validationSchema,
-        onSubmit: (values) => {
+        onSubmit: async (values) => {
             console.log(values);
             const blockExpiry = convertDateToBlockNumber(values.expiry);
             const dataToSubmit = {
                 ...values,
                 block_expiry: blockExpiry,
             };
-            submitFormData(dataToSubmit)
+            await submitFormData(dataToSubmit); // Submit data to the server
+            await createMarket(values.rangeOpen, values.rangeClose); // Create market on the blockchain
         },
     });
 
@@ -140,14 +143,9 @@ export function CreateMarket() {
                         </Grid>
                         <Grid item xs={12}>
                             <Button color="primary" variant="contained" fullWidth type="submit">
-                                Mint Tokens
+                            Create Market
                             </Button>
                         </Grid>
-                        {/* <Grid item xs={6}>
-                            <Button color="secondary" variant="contained" fullWidth type="button">
-                                Deploy
-                            </Button>
-                        </Grid> */}
                     </Grid>
                 </form>
             </CardContent>

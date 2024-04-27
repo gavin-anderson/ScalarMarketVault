@@ -2,7 +2,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import TopBanner from "./components/TopBanner";
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import MarketPage from "./MarketPage";
-import CreateMarket from "./CreateMarket";
+import CreateMarketPage from "./CreateMarketPage";
 import PortfolioPage from "./Portfolio";
 import MarketDetailPage from "./MarketPageDetails";
 import FAQPage from "./FAQ";
@@ -66,7 +66,7 @@ function App() {
 
                         <Routes>
                             <Route path="/" element={<MarketPage />} />
-                            <Route path="/create-market" element={<CreateMarket />} />
+                            <Route path="/create-market" element={<CreateMarketPage />} />
                             <Route path="/portfolio" element={<PortfolioPage />} />
                             <Route path="/faq" element={<FAQPage />} />
                             <Route path="/market/:id" element={<MarketDetailPage />} />
