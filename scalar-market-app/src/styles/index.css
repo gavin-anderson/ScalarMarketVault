@@ -1,14 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&display=swap');
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Crimson Pro', serif;
+  background-color: #E7E6E1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .MuiAppBar-root {
-  background: #FFF; /* Set to white or any preferred color */
+  background: #E7E6E1; /* Set to white or any preferred color */
   color: #000; /* Set text color */
   box-shadow: none; /* Remove default shadow */
   border-bottom: 1px solid #e0e0e0; /* Add a border to the bottom */

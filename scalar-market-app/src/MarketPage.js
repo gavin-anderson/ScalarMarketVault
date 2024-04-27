@@ -73,12 +73,13 @@ function MarketPage() {
     },
   ];
 
+
   return (
 
     <Card >
     <CardContent >
-      <Box  sx={{ mb: 2 }}>
-        <Typography color= 'inherit'variant="h6" gutterBottom>
+      <Box   sx={{ mb: 2  }}>
+        <Typography align='center'  color= 'inherit'variant="h5" gutterBottom>
           Trending Markets
         </Typography>
         <TextField
@@ -89,8 +90,9 @@ function MarketPage() {
           onChange={handleSearchChange}
         />
       </Box>
-      <div style={{ height: 450, width: '100%' }}>
+      <div style={{ height: 450, width: '100%', padding: "20px" }}>
         <DataGrid
+          sx={{ borderRadius: "30px", marginTop:"30px", borderWidth: "2px", borderColor: "black", padding: "10px"  }}
           rows={filteredData}
           columns={columns}
           pageSize={5}

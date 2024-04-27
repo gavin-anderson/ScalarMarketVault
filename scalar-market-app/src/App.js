@@ -1,3 +1,4 @@
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import TopBanner from "./components/TopBanner";
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import MarketPage from "./MarketPage";
@@ -8,25 +9,23 @@ import FAQPage from "./FAQ";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { Web3Provider } from "./Web3Provider";
 import { ConnectKitButton } from "connectkit";
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
+import './styles/index.css';
 
-// const GlobalStyle = createGlobalStyle`
-//   @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@200;400;600&display=swap');
-
-//   body {
-//     font-family: 'Crimson Pro', serif;
-//   }
-
-// `;
 const theme = createTheme({
-    palette: {
+    typography: {
+        fontFamily: 'Crimson Pro, serif',
+      },
+      palette: {
+        background: {
+          default: '#E7E6E1',
+          paper: '#E7E6E1',
+        },
         primary: {
-            main: '#E7E6E1',
+          main: '#000000', 
         },
         secondary: {
-            main: '#314E52',
-        }
+          main:'#314E52', 
+        },
     },
 });
 
@@ -41,7 +40,7 @@ function App() {
                         <TopBanner />
                     </header>
                     <Router>
-                        <AppBar position="static">
+                        <AppBar position="static" color="background"> 
                             <Toolbar>
                                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                                     Scalar Markets
