@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, Typography, Button, Box, Grid, TextField, Tab, Tabs } from '@mui/material';
-import SwapSection from './components/SwapSection';
-import DepositSection from './components/DepositSection';
-import LiquiditySection from './components/LiquiditySection';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { Card, CardContent, Typography, Box, Grid, Tabs, Tab } from '@mui/material';
+import SwapSection from '../../components/SwapSection';
+import DepositSection from '../../components/DepositSection';
+import LiquiditySection from '../../components/LiquiditySection';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -25,25 +24,14 @@ function TabPanel(props) {
   );
 }
 
-function MarketDetailPage() {
-  const { id } = useParams();
-  const [marketDetail, setMarketDetail] = useState(null);
+function MarketDetailPage({ marketDetail }) {
   const [value, setValue] = useState(0);
-
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  useEffect(() => {
-    fetch(`http://localhost:3001/get-market/${id}`)
-      .then((response) => response.json())
-      .then((data) => setMarketDetail(data))
-      .catch((error) => console.error("Fetching market detail error:", error));
-  }, [id]);
-
   if (!marketDetail) return <div>Loading...</div>;
 
-  // Render market details
   return (
     <Card raised>
       <CardContent>
@@ -88,11 +76,21 @@ function MarketDetailPage() {
         <TabPanel value={value} index={3}>
           {/* Content for Redeem */}
         </TabPanel>
-
-
       </CardContent>
     </Card>
   );
+}
+
+export async function getServerSideProps(context) {
+  const { id } = context.params;
+  const res = await fetch(`http://localhost:3001/get-market/${id}`);
+  const marketDetail = await res.json();
+
+  return {
+    props: {
+      marketDetail,
+    },
+  };
 }
 
 export default MarketDetailPage;

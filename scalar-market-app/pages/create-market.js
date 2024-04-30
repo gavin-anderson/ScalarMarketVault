@@ -1,25 +1,17 @@
-import React, { useState } from 'react';
-import { Button, TextField, Grid, Card, CardContent, Typography } from '@mui/material';
+import { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useCreateMarket } from './scripts/useCreateMarket.js';
+import { Button, TextField, Grid, Card, CardContent, Typography } from '@mui/material';
+import { useRouter } from 'next/router';
+import useCreateMarket from '../scripts/useCreateMarket';  // Adjust the path as necessary
 
-
-
-// Form validation schema
 const validationSchema = Yup.object().shape({
     ticker: Yup.string().required('Required'),
-    rangeOpen: Yup.string().required('Required'),
-    rangeClose: Yup.string().required('Required'),
+    rangeOpen: Yup.number().required('Required'),
+    rangeClose: Yup.number().required('Required'),
     expiry: Yup.date().required('Required'),
     description: Yup.string().required('Required'),
 });
-
-function convertDateToBlockNumber(date) {
-    // Placeholder for the actual conversion logic
-    const blockNumber = new Date(date).getTime() / 1000; // Example conversion
-    return Number(blockNumber);
-}
 
 async function submitFormData(formData) {
     try {
@@ -34,15 +26,17 @@ async function submitFormData(formData) {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        const result = await response.json();
-        console.log(result.message);
+        return await response.json();
     } catch (error) {
         console.error('Error during form data submission:', error);
     }
 }
-
-export function CreateMarket() {
+function convertDateToBlockNumber(date) {
+    // Placeholder for the actual conversion logic
+    const blockNumber = new Date(date).getTime() / 1000; // Example conversion
+    return Number(blockNumber);
+}
+function CreateMarketPage() {
     const createMarket =useCreateMarket(); // Initialize the hook
     const formik = useFormik({
         initialValues: {
@@ -68,11 +62,9 @@ export function CreateMarket() {
     return (
         <Card sx={{ maxWidth: 800, mx: 'auto', mt: 5 }}>
             <CardContent>
-                <Typography variant="h6" gutterBottom>
-                    Create Market
-                </Typography>
+                <Typography variant="h6" gutterBottom>Create Market</Typography>
                 <form onSubmit={formik.handleSubmit}>
-                    <Grid container spacing={3}>
+                <Grid container spacing={3}>
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
@@ -153,4 +145,4 @@ export function CreateMarket() {
     );
 }
 
-export default CreateMarket;
+export default CreateMarketPage;
