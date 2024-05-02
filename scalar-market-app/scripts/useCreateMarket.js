@@ -1,29 +1,32 @@
 // hooks/useCreateMarket.js
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, } from 'wagmi';
 import { Contract, utils } from 'ethers';
 import FactoryArtifact from '../abi/ScalarMarketFactory.json';  // Adjust the path as necessary
 
 const useCreateMarket = () => {
-    const { data: accountData, isConnected } = useAccount();
+    const { address, isConnected, connector } = useAccount();
+    const { data: hash, isPending, writeContract } = useWriteContract();
 
     const createMarket = async (_rangeStart, _rangeEnd) => {
-        if (!accountData?.signer) {
+        if (!isConnected || !connector) {
             console.error("Signer is not available");
+            console.log(isConnected);
+            console.log(connector);
             return;
         }
-        const scalarFactoryAddress = process.env.NEXT_PUBLIC_SCALAR_FACTORY; // Make sure the variable is correctly set
-        const scalarFactory = new Contract(scalarFactoryAddress, FactoryArtifact.abi, accountData.signer);
+        const scalarFactoryAddress = process.env.NEXT_PUBLIC_SCALAR_FACTORY;
+        writeContract({
+            address: scalarFactoryAddress.toString(),
+            FactoryArtifact,
+            functionName: 'createMarket',
+            args: [BigInt(_rangeStart), BigInt(_rangeEnd)],
+        })
+        const { isLoading: isConfirming, isSuccess: isConfirmed } =
+            useWaitForTransactionReceipt({
+                hash,
+            })
 
-        try {
-            const rangeStart = utils.parseEther(_rangeStart.toString());
-            const rangeEnd = utils.parseEther(_rangeEnd.toString());
-            const tx = await scalarFactory.createNewMarket(rangeStart, rangeEnd);
-            const receipt = await tx.wait();
-            return receipt.events.filter(event => event.event === 'MarketCreated').map(event => event.args);
-        } catch (error) {
-            console.error('Failed to create market:', error);
-            throw error;
-        }
+
     };
 
     return createMarket;

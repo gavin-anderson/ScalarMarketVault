@@ -8,6 +8,9 @@ import '../styles/trending-markets.css';
 function TrendingMarketsPage() {
   const [marketData, setMarketData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
   const router = useRouter();
 
   useEffect(() => {
@@ -33,14 +36,50 @@ function TrendingMarketsPage() {
 
   const columns = [
     { field: 'ticker', headerName: 'Ticker', width: 150, editable: true },
-    { field: 'rangeOpen', headerName: 'Range Open', type: 'number', width: 150, editable: true },
-    { field: 'rangeClose', headerName: 'Range Close', type: 'number', width: 150, editable: true },
-    { field: 'expiry', headerName: 'Expiry', type: 'date', width: 110, editable: true,
-      valueGetter: (params) => params.row && params.row.expiry ? new Date(params.row.expiry) : null },
+    {
+      field: 'rangeOpen', headerName: 'Range Open', type: 'number', width: 150, editable: true,
+      valueGetter: (params) => {
+        return params ? (params / 10 ** 18) : "";
+      }
+    },
+    {
+      field: 'rangeClose', headerName: 'Range Close', type: 'number', width: 150, editable: true,
+      valueGetter: (params) => {
+        return params ? (params / 10 ** 18) : "";
+      }
+    },
+    {
+      field: 'expiry', headerName: 'Expiry', type: 'date', width: 110, editable: true,
+      valueGetter: (params) => { return (params && params.row && params.row.expiry) ? new Date(params.row.expiry) : null; }
+    },
     { field: 'block_expiry', headerName: 'Block Expiry', type: 'number', width: 110, editable: true },
     { field: 'description', headerName: 'Description', width: 160, editable: true },
-  ];
+    { field: 'scalarMarketVaultClone', headerName: 'Vault Address', type: 'string', editable: true },
+    { field: 'longTokenClone', headerName: 'Long Token Address', type: 'string', editable: true },
+    { field: 'shortTokenClone', headerName: 'Short Token Address', type: 'string', editable: true },
+    { field: 'creator', headerName: 'Creator Address', type: 'string', editable: true }
 
+  ];
+  useEffect(() => {
+    setLoading(true);
+    fetch('http://localhost:3001/get-markets')
+      .then(response => response.json())
+      .then(data => {
+        const transformedData = data.map(item => ({
+          ...item,
+          id: item._id,
+        }));
+        setMarketData(transformedData);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Fetching data error:", error);
+        setError('Failed to load data.');
+        setLoading(false);
+      });
+  }, []);
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
   return (
     <Card>
       <CardContent>

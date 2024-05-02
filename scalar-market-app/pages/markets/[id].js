@@ -43,10 +43,10 @@ function MarketDetailPage({ marketDetail }) {
         </Typography>
         <Grid container spacing={2} my={2}>
           <Grid item xs={3}>
-            <Typography variant="body2">Range Open: {marketDetail.rangeOpen}</Typography>
+            <Typography variant="body2">Range Open: {marketDetail.rangeOpen/10**18}</Typography>
           </Grid>
           <Grid item xs={3}>
-            <Typography variant="body2">Range Close: {marketDetail.rangeClose}</Typography>
+            <Typography variant="body2">Range Close: {marketDetail.rangeClose/10**18}</Typography>
           </Grid>
           <Grid item xs={3}>
             <Typography variant="body2">Expiry: {marketDetail.expiry}</Typography>

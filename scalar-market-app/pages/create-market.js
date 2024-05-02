@@ -1,17 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Button, TextField, Grid, Card, CardContent, Typography } from '@mui/material';
-import { useRouter } from 'next/router';
-import useCreateMarket from '../scripts/useCreateMarket';  // Adjust the path as necessary
-
-const validationSchema = Yup.object().shape({
-    ticker: Yup.string().required('Required'),
-    rangeOpen: Yup.number().required('Required'),
-    rangeClose: Yup.number().required('Required'),
-    expiry: Yup.date().required('Required'),
-    description: Yup.string().required('Required'),
-});
+import { useWaitForTransactionReceipt, useWriteContract, useWatchContractEvent, useAccount } from 'wagmi';
+import FactoryArtifact from '../abi/ScalarMarketFactory.json';
 
 async function submitFormData(formData) {
     try {
@@ -36,8 +28,21 @@ function convertDateToBlockNumber(date) {
     const blockNumber = new Date(date).getTime() / 1000; // Example conversion
     return Number(blockNumber);
 }
+
 function CreateMarketPage() {
-    const createMarket =useCreateMarket(); // Initialize the hook
+    // States
+    const [eventData, setEventData] = useState(null);
+    const [lastScalarMarketVaultClone, setlastScalarMarketVaultClone] = useState(null);
+    const [formData, setFormData] = useState({ ticker: '', description: '', expiry: '' });
+    // Wagmi
+    const { address } = useAccount();
+    const { data: hash, isPending, writeContract } = useWriteContract();
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+    const scalarFactoryAddress = process.env.NEXT_PUBLIC_SCALAR_FACTORY;
+    const abi = FactoryArtifact.abi;
+
+
     const formik = useFormik({
         initialValues: {
             ticker: '',
@@ -46,25 +51,82 @@ function CreateMarketPage() {
             expiry: '',
             description: '',
         },
-        validationSchema: validationSchema,
+        validationSchema: Yup.object().shape({
+            ticker: Yup.string().required('Required'),
+            rangeOpen: Yup.number().required('Required'),
+            rangeClose: Yup.number().required('Required'),
+            expiry: Yup.date().required('Required'),
+            description: Yup.string().required('Required'),
+        }),
         onSubmit: async (values) => {
-            console.log(values);
+
             const blockExpiry = convertDateToBlockNumber(values.expiry);
-            const dataToSubmit = {
-                ...values,
-                block_expiry: blockExpiry,
-            };
-            await submitFormData(dataToSubmit); // Submit data to the server
-            await createMarket(values.rangeOpen, values.rangeClose); // Create market on the blockchain
+            values.block_expiry = blockExpiry;
+            values.creator = address;
+            try {
+                await writeContract({
+                    address: scalarFactoryAddress,
+                    abi,
+                    functionName: "createNewMarket",
+                    args: [BigInt(values.rangeOpen * 10 ** 18), BigInt(values.rangeClose * 10 ** 18), BigInt(values.block_expiry)],
+                    nonce: 33
+                });
+            } catch (error) {
+                console.error('Transaction failed:', error);
+
+            }
         },
     });
+
+    useWatchContractEvent({
+        address: scalarFactoryAddress,
+        abi: abi,
+        eventName: 'MarketCreated',
+        onLogs(logs) {
+            console.log('New logs!', logs[0].args);
+            const { scalarMarketVaultClone, longTokenClone, shortTokenClone, startRange, endRange, expiry, creator } = logs[0].args;
+            const block_expiry = Number(expiry);
+            const rangeOpen = Number(startRange);
+            const rangeClose = Number(endRange);
+            if (scalarMarketVaultClone !== lastScalarMarketVaultClone) {
+                setEventData({ scalarMarketVaultClone, longTokenClone, shortTokenClone, rangeOpen, rangeClose, block_expiry, creator });
+                setlastScalarMarketVaultClone(scalarMarketVaultClone);
+
+            }
+        },
+    });
+    useEffect(() => {
+        if (eventData) {
+            console.log(`Event Data: ${JSON.stringify(eventData)}`);
+            const matches = Number(eventData.rangeOpen / 10 ** 18) === formik.values.rangeOpen &&
+                Number(eventData.rangeClose / 10 ** 18) === formik.values.rangeClose &&
+                eventData.block_expiry === formik.values.block_expiry &&
+                eventData.creator === address;
+
+            const dataSubmission = {
+                ticker: matches ? formik.values.ticker : '',
+                description: matches ? formik.values.description : '',
+                expiry: matches ? formik.values.expiry : '',
+                ...eventData
+            }
+            submitFormData(dataSubmission).then(response => {
+                console.log('Data submitted successfully:', response);
+            }).catch(error => {
+                console.error('Error submitting form data:', error);
+            }).finally(() => {
+                setEventData(null);
+            });
+
+
+        }
+    }, [eventData, formik.values, address]);
 
     return (
         <Card sx={{ maxWidth: 800, mx: 'auto', mt: 5 }}>
             <CardContent>
                 <Typography variant="h6" gutterBottom>Create Market</Typography>
                 <form onSubmit={formik.handleSubmit}>
-                <Grid container spacing={3}>
+                    <Grid container spacing={3}>
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
@@ -134,9 +196,12 @@ function CreateMarketPage() {
                             />
                         </Grid>
                         <Grid item xs={12}>
-                            <Button color="primary" variant="contained" fullWidth type="submit">
-                            Create Market
+                            <Button disabled={isPending} color="primary" variant="contained" fullWidth type="submit">
+                                {isPending ? 'Confirming...' : 'Create Market'}
                             </Button>
+                            {hash && <div>Transaction Hash: {hash}</div>}
+                            {isConfirming && <div>Waiting for confirmation...</div>}
+                            {isConfirmed && <div>Transaction confirmed.</div>}
                         </Grid>
                     </Grid>
                 </form>
