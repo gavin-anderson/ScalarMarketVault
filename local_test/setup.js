@@ -1,11 +1,7 @@
 const { Contract, ContractFactory, utils } = require("ethers");
+const fs = require('fs');
 
 const { deployUniContracts } = require('../exportableScripts/deployUniContracts');
-const { deployPools } = require("../exportableScripts/deployPools");
-const { checkLiquidity } = require("../lib/checkLiquidity");
-const { addLiquidity } = require("../exportableScripts/addLiquidity");
-const { swap041, swap140, quote041, quote140 } = require("../lib/swaps");
-const { removeLiquidity } = require("../exportableScripts/removeLiquidity");
 
 const artifacts = {
     ScalarVault: require("../artifacts/contracts/ScalarMarketVault.sol/ScalarMarketVault.json"),
@@ -31,14 +27,14 @@ async function main() {
     // Deploy Scalar Factory
     scalarFactory = new ContractFactory(artifacts.Factory.abi, artifacts.Factory.bytecode, owner);
     const scalarfactory = await scalarFactory.deploy();
-    addresses["SCALAR_FACTORY"] = scalarfactory.address;
+    addresses["NEXT_PUBLIC_SCALAR_FACTORY"] = scalarfactory.address;
     console.log("Factory Deployed")
     console.log("-------------------------------------");
 
     // Deploy ScalarMarketVault
     ScalarMarketVault = new ContractFactory(artifacts.ScalarVault.abi, artifacts.ScalarVault.bytecode, owner);
-    const scalarmarketvaultTemplate = await ScalarMarketVault.deploy(addresses.SCALAR_FACTORY);
-    addresses["SCALAR_VAULT"] = scalarmarketvaultTemplate.address;
+    const scalarmarketvaultTemplate = await ScalarMarketVault.deploy(addresses.NEXT_PUBLIC_SCALAR_FACTORY, addresses.NEXT_PUBLIC_SWAP_ROUTER_ADDRESS);
+    addresses["NEXT_PUBLIC_SCALAR_VAULT"] = scalarmarketvaultTemplate.address;
     console.log("Vault Deployed")
     console.log("-------------------------------------");
 
@@ -48,16 +44,19 @@ async function main() {
     const longTokenTemplate = await longToken.deploy(scalarfactory.address);
     const shortTokenTemplate = await shortToken.deploy(scalarfactory.address);
 
-    addresses["LONG_TOKEN_ADDRESS"] = longTokenTemplate.address;
-    addresses["SHORT_TOKEN_ADDRESS"] = shortTokenTemplate.address;
+    addresses["NEXT_PUBLIC_LONG_TOKEN_ADDRESS"] = longTokenTemplate.address;
+    addresses["NEXT_PUBLIC_SHORT_TOKEN_ADDRESS"] = shortTokenTemplate.address;
 
     console.log("Long Short templates Deployed");
     console.log("-------------------------------------");
 
     // Set templates
-    await scalarfactory.connect(owner).setTemplates(addresses.SCALAR_VAULT, addresses.LONG_TOKEN_ADDRESS, addresses.SHORT_TOKEN_ADDRESS);
+    await scalarfactory.connect(owner).setTemplates(addresses.NEXT_PUBLIC_SCALAR_VAULT, addresses.NEXT_PUBLIC_LONG_TOKEN_ADDRESS, addresses.NEXT_PUBLIC_SHORT_TOKEN_ADDRESS);
     console.log("Factory setTemplates");
     console.log("-------------------------------------");
+    console.log(addresses);
+    fs.writeFileSync('../contract-addresses.json', JSON.stringify(addresses, null, 2));
+    console.log("Done");
 }
 
 main()

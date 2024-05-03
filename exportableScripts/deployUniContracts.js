@@ -80,24 +80,24 @@ async function deployUniContracts(signer) {
     NonfungiblePositionManager = new ContractFactory(artifacts.NonfungiblePositionManager.abi, artifacts.NonfungiblePositionManager.bytecode, signer);
     nonfungiblePositionManager = await NonfungiblePositionManager.deploy(factory.address, weth.address, nonfungibleTokenPositionDescriptor.address);
 
-    console.log('WETH_ADDRESS=', `'${weth.address}'`)
-    console.log('FACTORY_ADDRESS=', `'${factory.address}'`)
-    console.log('SWAP_ROUTER_ADDRESS=', `'${swapRouter.address}'`)
-    console.log('NFT_DESCRIPTOR_ADDRESS=', `'${nftDescriptor.address}'`)
-    console.log('POSITION_DESCRIPTOR_ADDRESS=', `'${nonfungibleTokenPositionDescriptor.address}'`)
-    console.log('POSITION_MANAGER_ADDRESS=', `'${nonfungiblePositionManager.address}'`)
-    console.log('QUOTERV2_ADDRESS =', `'${quoterV2.address}'`);
+    console.log('NEXT_PUBLIC_WETH_ADDRESS=', `'${weth.address}'`)
+    console.log('NEXT_PUBLIC_FACTORY_ADDRESS=', `'${factory.address}'`)
+    console.log('NEXT_PUBLIC_SWAP_ROUTER_ADDRESS=', `'${swapRouter.address}'`)
+    console.log('NEXT_PUBLIC_NFT_DESCRIPTOR_ADDRESS=', `'${nftDescriptor.address}'`)
+    console.log('NEXT_PUBLIC_POSITION_DESCRIPTOR_ADDRESS=', `'${nonfungibleTokenPositionDescriptor.address}'`)
+    console.log('NEXT_PUBLIC_POSITION_MANAGER_ADDRESS=', `'${nonfungiblePositionManager.address}'`)
+    console.log('NEXT_PUBLIC_QUOTERV2_ADDRESS =', `'${quoterV2.address}'`);
 
 
 
     let addresses = {
-        WETH_ADDRESS: weth.address,
-        FACTORY_ADDRESS: factory.address,
-        SWAP_ROUTER_ADDRESS: swapRouter.address,
-        NFT_DESCRIPTOR_ADDRESS: nftDescriptor.address,
-        POSITION_DESCRIPTOR_ADDRESS: nonfungibleTokenPositionDescriptor.address,
-        POSITION_MANAGER_ADDRESS: nonfungiblePositionManager.address,
-        QUOTERV2_ADDRESS: quoterV2.address
+        NEXT_PUBLIC_WETH_ADDRESS: weth.address,
+        NEXT_PUBLIC_FACTORY_ADDRESS: factory.address,
+        NEXT_PUBLIC_SWAP_ROUTER_ADDRESS: swapRouter.address,
+        NEXT_PUBLIC_NFT_DESCRIPTOR_ADDRESS: nftDescriptor.address,
+        NEXT_PUBLIC_POSITION_DESCRIPTOR_ADDRESS: nonfungibleTokenPositionDescriptor.address,
+        NEXT_PUBLIC_POSITION_MANAGER_ADDRESS: nonfungiblePositionManager.address,
+        NEXT_PUBLIC_QUOTERV2_ADDRESS: quoterV2.address
     }    
     return (addresses);
     

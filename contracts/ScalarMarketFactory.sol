@@ -13,7 +13,7 @@ contract ScalarMarketFactory is Ownable{
     address public longToken;
     address public shortToken;
     
-    event MarketCreated(address scalarMarketVaultClone, address longTokenClone, address shortTokenClone);
+    event MarketCreated(address scalarMarketVaultClone, address longTokenClone, address shortTokenClone, uint256 startRange, uint256 endRange,uint256 expiry,address creator);
 
     constructor()Ownable(msg.sender){}
 
@@ -23,17 +23,21 @@ contract ScalarMarketFactory is Ownable{
         shortToken=_shortToken;
     } 
 
-    function createNewMarket(uint256 startRange, uint256 endRange)external{
+    function createNewMarket(uint256 startRange, uint256 endRange, uint256 expiry)external{
+        require(startRange/10**18 >0, "Wrong Scale rangeOpen");
+        require(endRange/10**18 >0, "Wrong Scale rangeClose");
+        require(expiry>block.number, "Expiry must be in the future");
         address scalarMarketVaultClone = createScalarVault();
         (address longTokenClone, address shortTokenClone) = createLongShort();
 
         ILongToken(longTokenClone).setVault(scalarMarketVaultClone);
         IShortToken(shortTokenClone).setVault(scalarMarketVaultClone);
-        IScalarMarketVault(scalarMarketVaultClone).initialize(longTokenClone, shortTokenClone,startRange,endRange, msg.sender);
+        IScalarMarketVault(scalarMarketVaultClone).initialize(longTokenClone, shortTokenClone,startRange,endRange,expiry, msg.sender);
 
         (address token0, address token1) = longTokenClone < shortTokenClone ? (longTokenClone, shortTokenClone) : (shortTokenClone, longTokenClone);
         getVault[token0][token1] = scalarMarketVaultClone;
-        emit MarketCreated(scalarMarketVaultClone, longTokenClone, shortTokenClone);
+        getVault[token1][token0] = scalarMarketVaultClone;
+        emit MarketCreated(scalarMarketVaultClone, longTokenClone, shortTokenClone, startRange, endRange, expiry, msg.sender);
     }
 
     function createScalarVault()internal returns(address vaultClone){
