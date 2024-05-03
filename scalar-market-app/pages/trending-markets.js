@@ -13,19 +13,6 @@ function TrendingMarketsPage() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    fetch('http://localhost:3001/get-markets')
-      .then(response => response.json())
-      .then(data => {
-        const transformedData = data.map(item => ({
-          ...item,
-          id: item._id, // Transform _id to id for usage with DataGrid
-        }));
-        setMarketData(transformedData);
-      })
-      .catch(error => console.error("Fetching data error:", error));
-  }, []);
-
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };

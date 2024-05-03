@@ -24,35 +24,35 @@ function TabPanel(props) {
   );
 }
 
-function MarketDetailPage({ marketDetail }) {
+function MarketDetailPage({ marketDetails }) {
   const [value, setValue] = useState(0);
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  if (!marketDetail) return <div>Loading...</div>;
+  if (!marketDetails) return <div>Loading...</div>;
 
   return (
     <Card raised>
       <CardContent>
         <Typography variant="h4" gutterBottom>
-          {marketDetail.ticker}
+          {marketDetails.ticker}
         </Typography>
         <Typography variant="subtitle1" gutterBottom>
-          {marketDetail.description}
+          {marketDetails.description}
         </Typography>
         <Grid container spacing={2} my={2}>
           <Grid item xs={3}>
-            <Typography variant="body2">Range Open: {marketDetail.rangeOpen/10**18}</Typography>
+            <Typography variant="body2">Range Open: {marketDetails.rangeOpen/10**18}</Typography>
           </Grid>
           <Grid item xs={3}>
-            <Typography variant="body2">Range Close: {marketDetail.rangeClose/10**18}</Typography>
+            <Typography variant="body2">Range Close: {marketDetails.rangeClose/10**18}</Typography>
           </Grid>
           <Grid item xs={3}>
-            <Typography variant="body2">Expiry: {marketDetail.expiry}</Typography>
+            <Typography variant="body2">Expiry: {marketDetails.expiry}</Typography>
           </Grid>
           <Grid item xs={3}>
-            <Typography variant="body2">Block Expiry: {marketDetail.block_expiry}</Typography>
+            <Typography variant="body2">Block Expiry: {marketDetails.block_expiry}</Typography>
           </Grid>
         </Grid>
 
@@ -65,13 +65,13 @@ function MarketDetailPage({ marketDetail }) {
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
-          <DepositSection />
+          <DepositSection  marketDetails={marketDetails} />
         </TabPanel>
         <TabPanel value={value} index={1}>
-          <SwapSection />
+          <SwapSection  marketDetails={marketDetails}/>
         </TabPanel>
         <TabPanel value={value} index={2}>
-          <LiquiditySection/>
+          <LiquiditySection  marketDetails={marketDetails}/>
         </TabPanel>
         <TabPanel value={value} index={3}>
           {/* Content for Redeem */}
@@ -84,11 +84,11 @@ function MarketDetailPage({ marketDetail }) {
 export async function getServerSideProps(context) {
   const { id } = context.params;
   const res = await fetch(`http://localhost:3001/get-market/${id}`);
-  const marketDetail = await res.json();
+  const marketDetails = await res.json();
 
   return {
     props: {
-      marketDetail,
+      marketDetails,
     },
   };
 }

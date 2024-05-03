@@ -69,7 +69,7 @@ function CreateMarketPage() {
                     abi,
                     functionName: "createNewMarket",
                     args: [BigInt(values.rangeOpen * 10 ** 18), BigInt(values.rangeClose * 10 ** 18), BigInt(values.block_expiry)],
-                    nonce: 33
+                    
                 });
             } catch (error) {
                 console.error('Transaction failed:', error);
