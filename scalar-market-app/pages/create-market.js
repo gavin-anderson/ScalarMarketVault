@@ -7,7 +7,7 @@ import FactoryArtifact from '../abi/ScalarMarketFactory.json';
 
 async function submitFormData(formData) {
     try {
-        const response = await fetch('http://localhost:3001/submit-data', {
+        const response = await fetch('http://localhost:3001/submit-metadata', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -30,18 +30,12 @@ function convertDateToBlockNumber(date) {
 }
 
 function CreateMarketPage() {
-    // States
-    const [eventData, setEventData] = useState(null);
-    const [lastScalarMarketVaultClone, setlastScalarMarketVaultClone] = useState(null);
-    const [formData, setFormData] = useState({ ticker: '', description: '', expiry: '' });
-    // Wagmi
     const { address } = useAccount();
     const { data: hash, isPending, writeContract } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
     const scalarFactoryAddress = process.env.NEXT_PUBLIC_SCALAR_FACTORY;
-    const abi = FactoryArtifact.abi;
-
+    const abi = FactoryArtifact.abi
 
     const formik = useFormik({
         initialValues: {
@@ -69,7 +63,7 @@ function CreateMarketPage() {
                     abi,
                     functionName: "createNewMarket",
                     args: [BigInt(values.rangeOpen * 10 ** 18), BigInt(values.rangeClose * 10 ** 18), BigInt(values.block_expiry)],
-                    
+
                 });
             } catch (error) {
                 console.error('Transaction failed:', error);
@@ -78,48 +72,24 @@ function CreateMarketPage() {
         },
     });
 
-    useWatchContractEvent({
-        address: scalarFactoryAddress,
-        abi: abi,
-        eventName: 'MarketCreated',
-        onLogs(logs) {
-            console.log('New logs!', logs[0].args);
-            const { scalarMarketVaultClone, longTokenClone, shortTokenClone, startRange, endRange, expiry, creator } = logs[0].args;
-            const block_expiry = Number(expiry);
-            const rangeOpen = Number(startRange);
-            const rangeClose = Number(endRange);
-            if (scalarMarketVaultClone !== lastScalarMarketVaultClone) {
-                setEventData({ scalarMarketVaultClone, longTokenClone, shortTokenClone, rangeOpen, rangeClose, block_expiry, creator });
-                setlastScalarMarketVaultClone(scalarMarketVaultClone);
-
-            }
-        },
-    });
+    console.log(isConfirmed);
     useEffect(() => {
-        if (eventData) {
-            console.log(`Event Data: ${JSON.stringify(eventData)}`);
-            const matches = Number(eventData.rangeOpen / 10 ** 18) === formik.values.rangeOpen &&
-                Number(eventData.rangeClose / 10 ** 18) === formik.values.rangeClose &&
-                eventData.block_expiry === formik.values.block_expiry &&
-                eventData.creator === address;
-
-            const dataSubmission = {
-                ticker: matches ? formik.values.ticker : '',
-                description: matches ? formik.values.description : '',
-                expiry: matches ? formik.values.expiry : '',
-                ...eventData
+        if (isConfirmed) {
+            const datatoSubmit = {
+                ...formik.values,
+                block_expiry: formik.values.block_expiry,
+                creator: address
             }
-            submitFormData(dataSubmission).then(response => {
+
+            submitFormData(datatoSubmit).then(response => {
                 console.log('Data submitted successfully:', response);
             }).catch(error => {
                 console.error('Error submitting form data:', error);
             }).finally(() => {
-                setEventData(null);
             });
+        };
 
-
-        }
-    }, [eventData, formik.values, address]);
+    }, [isConfirmed]);
 
     return (
         <Card sx={{ maxWidth: 800, mx: 'auto', mt: 5 }}>

@@ -26,13 +26,13 @@ function TrendingMarketsPage() {
     {
       field: 'rangeOpen', headerName: 'Range Open', type: 'number', width: 150, editable: true,
       valueGetter: (params) => {
-        return params ? (params / 10 ** 18) : "";
+        return params ? (params) : "";
       }
     },
     {
       field: 'rangeClose', headerName: 'Range Close', type: 'number', width: 150, editable: true,
       valueGetter: (params) => {
-        return params ? (params / 10 ** 18) : "";
+        return params ? (params) : "";
       }
     },
     {
