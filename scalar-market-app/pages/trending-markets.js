@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { DataGrid } from '@mui/x-data-grid';
 import { Button, TextField, Grid, Card, CardContent, Typography, Box } from '@mui/material';
-import '../styles/trending-markets.css';
+
 
 function TrendingMarketsPage() {
   const [marketData, setMarketData] = useState([]);
@@ -41,9 +41,9 @@ function TrendingMarketsPage() {
     },
     { field: 'block_expiry', headerName: 'Block Expiry', type: 'number', width: 110, editable: true },
     { field: 'description', headerName: 'Description', width: 160, editable: true },
-    { field: 'scalarMarketVaultClone', headerName: 'Vault Address', type: 'string', editable: true },
-    { field: 'longTokenClone', headerName: 'Long Token Address', type: 'string', editable: true },
-    { field: 'shortTokenClone', headerName: 'Short Token Address', type: 'string', editable: true },
+    { field: 'vaultAddress', headerName: 'Vault Address', type: 'string', editable: true },
+    { field: 'longAddress', headerName: 'Long Token Address', type: 'string', editable: true },
+    { field: 'shortAddress', headerName: 'Short Token Address', type: 'string', editable: true },
     { field: 'creator', headerName: 'Creator Address', type: 'string', editable: true }
 
   ];
@@ -91,7 +91,7 @@ function TrendingMarketsPage() {
             disableSelectionOnClick
             getRowId={(row) => row._id}
             onRowClick={(params) => {
-              router.push(`/markets/${params.id}`);
+              router.push(`/markets/${params.row.vaultAddress}`);
             }}
           />
         </div>

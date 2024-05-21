@@ -4,6 +4,9 @@ import { Card, CardContent, Typography, Box, Grid, Tabs, Tab } from '@mui/materi
 import SwapSection from '../../components/SwapSection';
 import DepositSection from '../../components/DepositSection';
 import LiquiditySection from '../../components/LiquiditySection';
+import CreatePool from '@/components/CreatePool';
+import RedeemSection from '@/components/RedeemSection';
+import SubmitValueSection from '@/components/SubmitValueSection';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -43,10 +46,10 @@ function MarketDetailPage({ marketDetails }) {
         </Typography>
         <Grid container spacing={2} my={2}>
           <Grid item xs={3}>
-            <Typography variant="body2">Range Open: {marketDetails.rangeOpen/10**18}</Typography>
+            <Typography variant="body2">Range Open: {marketDetails.rangeOpen}</Typography>
           </Grid>
           <Grid item xs={3}>
-            <Typography variant="body2">Range Close: {marketDetails.rangeClose/10**18}</Typography>
+            <Typography variant="body2">Range Close: {marketDetails.rangeClose}</Typography>
           </Grid>
           <Grid item xs={3}>
             <Typography variant="body2">Expiry: {marketDetails.expiry}</Typography>
@@ -59,8 +62,10 @@ function MarketDetailPage({ marketDetails }) {
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} aria-label="market detail tabs">
             <Tab label="Mint" />
-            <Tab label="Swap" />
+            <Tab label="Create Pool"/>
             <Tab label="Liquidity" />
+            <Tab label="Swap" />
+            <Tab label="Submit FInal Value" />
             <Tab label="Redeem" />
           </Tabs>
         </Box>
@@ -68,13 +73,19 @@ function MarketDetailPage({ marketDetails }) {
           <DepositSection  marketDetails={marketDetails} />
         </TabPanel>
         <TabPanel value={value} index={1}>
-          <SwapSection  marketDetails={marketDetails}/>
+          <CreatePool  marketDetails={marketDetails} />
         </TabPanel>
         <TabPanel value={value} index={2}>
-          <LiquiditySection  marketDetails={marketDetails}/>
+          <LiquiditySection  marketDetails={marketDetails}/> SwapSection
         </TabPanel>
         <TabPanel value={value} index={3}>
-          {/* Content for Redeem */}
+          <SwapSection  marketDetails={marketDetails}/>
+        </TabPanel>
+        <TabPanel value={value} index={4}>
+          <SubmitValueSection marketDetails={marketDetails}/>
+        </TabPanel>
+        <TabPanel value={value} index={5}>
+          <RedeemSection marketDetails={marketDetails}/>
         </TabPanel>
       </CardContent>
     </Card>
@@ -82,14 +93,14 @@ function MarketDetailPage({ marketDetails }) {
 }
 
 export async function getServerSideProps(context) {
-  const { id } = context.params;
-  const res = await fetch(`http://localhost:3001/get-market/${id}`);
+  const { vaultAddress } = context.params;
+  const res = await fetch(`http://localhost:3001/get-market/${vaultAddress}`);
   const marketDetails = await res.json();
 
   return {
-    props: {
-      marketDetails,
-    },
+      props: {
+          marketDetails,
+      },
   };
 }
 

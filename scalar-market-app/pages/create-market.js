@@ -72,13 +72,16 @@ function CreateMarketPage() {
         },
     });
 
-    console.log(isConfirmed);
     useEffect(() => {
         if (isConfirmed) {
+            const _ticker = formik.values.ticker;
+            const _description = formik.values.description;
+            const _expiry = formik.values.expiry;
             const datatoSubmit = {
-                ...formik.values,
-                block_expiry: formik.values.block_expiry,
-                creator: address
+                ticker: _ticker,
+                description: _description,
+                expiry: _expiry,
+                transactionHash: hash
             }
 
             submitFormData(datatoSubmit).then(response => {

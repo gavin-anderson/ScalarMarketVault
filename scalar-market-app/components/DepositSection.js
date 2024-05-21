@@ -28,13 +28,14 @@ export default function DepositSection({marketDetails}) {
     }),
     onSubmit: async(values) => {
       console.log(values);
+      console.log(marketDetails.vaultAddress);
       try {
         await writeContract({
-            address: marketDetails.scalarMarketVaultClone,
+            address: marketDetails.vaultAddress,
             abi,
             functionName: "mintLongShort",
             args: [address],
-            value: parseEther(String(values.eth)),
+            value: parseEther(values.eth),
             
         });
     } catch (error) {
