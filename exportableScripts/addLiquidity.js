@@ -17,7 +17,16 @@ async function getPoolData(poolContract) {
         poolContract.liquidity(),
         poolContract.slot0(),
     ]);
-
+    console.log(`fee: ${tickSpacing}`);
+    console.log(typeof (tickSpacing));
+    console.log(`fee: ${fee}`);
+    console.log(typeof (fee));
+    console.log(`sqrtPrice: ${slot0[0]}`);
+    console.log(typeof (slot0[0]));
+    console.log(`Liquidity: ${liquidity}`);
+    console.log(typeof (liquidity));
+    console.log(`tick: ${slot0[1]}`);
+    console.log(typeof (slot0[1]));
     return {
         tickSpacing: tickSpacing,
         fee: fee,
@@ -27,8 +36,7 @@ async function getPoolData(poolContract) {
     }
 }
 // input needs to be string
-async function addLiquidity(input, signer, provider,LONG_TOKEN_ADDRESS,SHORT_TOKEN_ADDRESS, POSITION_MANAGER_ADDRESS, POOL_ADDRESS) {
-
+async function addLiquidity(input, signer, provider, LONG_TOKEN_ADDRESS, SHORT_TOKEN_ADDRESS, POSITION_MANAGER_ADDRESS, POOL_ADDRESS) {
     const LongTokenContract = new Contract(LONG_TOKEN_ADDRESS, artifacts.LongToken.abi, provider);
     const ShortTokenContract = new Contract(SHORT_TOKEN_ADDRESS, artifacts.ShortToken.abi, provider);
 
@@ -100,8 +108,8 @@ async function addLiquidity(input, signer, provider,LONG_TOKEN_ADDRESS,SHORT_TOK
         { gasLimit: '1000000' }
     )
     const receipt = await tx.wait();
-    for (const event of receipt.events){
-        if (event.event =='IncreaseLiquidity' || event.event === 'Mint') {
+    for (const event of receipt.events) {
+        if (event.event == 'IncreaseLiquidity' || event.event === 'Mint') {
             const tokenId = event.args.tokenId;
             console.log(`Token ID: ${tokenId.toString()}`);
             return tokenId;

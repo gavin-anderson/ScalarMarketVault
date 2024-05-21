@@ -14,7 +14,10 @@ const artifacts = {
     LongToken: require("../artifacts/contracts/LongToken.sol/LongToken.json"),
     ShortToken: require("../artifacts/contracts/ShortToken.sol/ShortToken.json"),
     USDC: require('../artifacts/contracts/USDC.sol/USDC.json'),
-    Factory: require("../artifacts/contracts/ScalarMarketFactory.sol/ScalarMarketFactory.json")
+    Factory: require("../artifacts/contracts/ScalarMarketFactory.sol/ScalarMarketFactory.json"),
+    IUniswapV3PoolABI: require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'),
+    SwapRouterABI: require('@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json'),
+    QuoterV2: require("@uniswap/v3-periphery/artifacts/contracts/lens/QuoterV2.sol/QuoterV2.json")
 }
 
 async function main() {
@@ -126,8 +129,8 @@ async function main() {
     clonedLongBalance = await clonedLong.balanceOf(signer2.address);
     clonedShortBalance = await clonedShort.balanceOf(signer2.address);
     console.log("Signer2 Balance");
-    console.log(`Long Token: ${clonedLongBalance/10**18}`);
-    console.log(`Short Token: Balance: ${clonedShortBalance/10**18}`)
+    console.log(`Long Token: ${clonedLongBalance / 10 ** 18}`);
+    console.log(`Short Token: Balance: ${clonedShortBalance / 10 ** 18}`)
     console.log("-------------------------------------");
     // provide Liquidity
     await addLiquidity("10000000", signer2, provider, clonedLong.address, clonedShort.address, addresses.NEXT_PUBLIC_POSITION_MANAGER_ADDRESS, addresses.CLONED_1_POOL_ADDRESS);
@@ -138,20 +141,14 @@ async function main() {
     clonedShortBalance = await clonedShort.balanceOf(signer2.address);
     console.log("-------------------------------------");
     console.log("Signer2 Balance");
-    console.log(`Long Token: ${clonedLongBalance/10**18}`);
-    console.log(`Short Token: Balance: ${clonedShortBalance/10**18}`);
+    console.log(`Long Token: ${clonedLongBalance / 10 ** 18}`);
+    console.log(`Short Token: Balance: ${clonedShortBalance / 10 ** 18}`);
     console.log("-------------------------------------");
 
-    // Signer3 mint and swap
-    const Amount = utils.parseEther("1");
-    const DEADLINE_FROM_NOW = 1200; // 20 minutes
-    const deadline = Math.floor(Date.now() / 1000) + DEADLINE_FROM_NOW;
-    await clonedVault.connect(signer3).mintAndSwap(signer3.address, 1, deadline, 500, 100, 0,
-        {
-            value: Amount
-        }
-    );
-
+    // Signer3 mint
+    await clonedVault.connect(signer3).mintLongShort(signer3.address, {
+        value: ethAmount
+    });
     ethBalanceContract = await provider.getBalance(addresses.VAULTCLONE);
     ethBalanceSigner = await provider.getBalance(signer3.address);
     clonedLongBalance = await clonedLong.balanceOf(signer3.address);
@@ -163,6 +160,63 @@ async function main() {
     console.log(`Cloned Short Balance: ${clonedShortBalance}`);
     console.log("Signer 3 mint");
     console.log("-------------------------------------");
+
+    // Signer3 Swap Long for Shorts
+    const swapRouterContract = new ethers.Contract(addresses.NEXT_PUBLIC_SWAP_ROUTER_ADDRESS, artifacts.SwapRouterABI.abi, provider);
+
+    // Define the swap parameters
+    const amountIn = ethers.utils.parseEther("100");
+
+    // Approve the SwapRouter to spend token
+    const tokenContract = new ethers.Contract(clonedLong.address, artifacts.LongToken.abi, provider);
+    await tokenContract.connect(signer3).approve(addresses.NEXT_PUBLIC_SWAP_ROUTER_ADDRESS, amountIn);
+
+    
+
+    const params = {
+        tokenIn: clonedLong.address,
+        tokenOut: clonedShort.address,
+        fee: 500,
+        recipient: signer3.address,
+        deadline: Math.floor(Date.now() / 1000) + (60 * 10)*100,
+        amountIn: amountIn,
+        amountOutMinimum: 0,
+        sqrtPriceLimitX96: 0,
+    };
+    console.log(`Params: ${params}`);
+    console.log(`tokenIn: ${params.tokenIn}`);
+    console.log(`tokenIn: ${typeof(params.tokenIn)}`);
+    console.log(`tokenOut: ${params.tokenOut}`);
+    console.log(`tokenOut: ${typeof(params.tokenOut)}`);
+    console.log(`fee: ${params.fee}`);
+    console.log(`fee: ${typeof(params.fee)}`);
+    console.log(`recipient: ${params.recipient}`);
+    console.log(`recipient: ${typeof(params.recipient)}`);
+    console.log(`deadline: ${params.deadline}`);
+    console.log(`deadline: ${typeof(params.deadline)}`);
+    console.log(`amountIn: ${params.amountIn}`);
+    console.log(`amountIn: ${typeof(params.amountIn)}`);
+    console.log(`amountOut: ${params.amountOutMinimum}`);
+    console.log(`amountOut: ${typeof(params.amountOutMinimum)}`);
+    console.log(`sqrtPrice: ${params.sqrtPriceLimitX96}`);
+    console.log(`sqrtPrice: ${typeof(params.sqrtPriceLimitX96)}`);
+
+
+    // Execute the swap
+    const transaction = await swapRouterContract.connect(signer3).exactInputSingle(params, {
+        gasLimit: ethers.utils.hexlify(1000000)
+    });
+
+
+    clonedLongBalance = await clonedLong.balanceOf(signer3.address);
+    clonedShortBalance = await clonedShort.balanceOf(signer3.address);
+
+    console.log(`Cloned Long Balance: ${clonedLongBalance}`);
+    console.log(`Cloned Short Balance: ${clonedShortBalance}`);
+    console.log("Signer 3 Swap");
+    console.log("-------------------------------------");
+
+
 }
 
 main()

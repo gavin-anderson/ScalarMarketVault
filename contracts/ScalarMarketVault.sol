@@ -185,10 +185,10 @@ contract ScalarMarketVault {
     function setFinalValue(uint256 _fValue) external onlyCreator {
         require(isInitialized, "Has not been initialized");
         require(!isFinalValueSet, "Final Value has already been set");
-        require(
-            block.number >= expiry,
-            "Answer can not be submitted until after expiry"
-        );
+        // require(
+        //     block.number >= expiry,
+        //     "Answer can not be submitted until after expiry"
+        // );
         require(
             (_fValue * rangeAccuracy) / rangeAccuracy > 0,
             "Accruacy of answer is not clear enough"

@@ -14,7 +14,10 @@ const artifacts = {
     LongToken: require("../artifacts/contracts/LongToken.sol/LongToken.json"),
     ShortToken: require("../artifacts/contracts/ShortToken.sol/ShortToken.json"),
     USDC: require('../artifacts/contracts/USDC.sol/USDC.json'),
-    Factory: require("../artifacts/contracts/ScalarMarketFactory.sol/ScalarMarketFactory.json")
+    Factory: require("../artifacts/contracts/ScalarMarketFactory.sol/ScalarMarketFactory.json"),
+    IUniswapV3PoolABI: require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'),
+    SwapRouterABI: require('@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json'),
+    QuoterV2: require("@uniswap/v3-periphery/artifacts/contracts/lens/QuoterV2.sol/QuoterV2.json")
 }
 
 async function main() {
@@ -116,53 +119,12 @@ async function main() {
     console.log("Signer 2 Mint")
     console.log("-------------------------------------");
 
-    // create pool
-    console.log(addresses);
-    const clone1PoolAddress = await deployPools(500, signer2, provider, clonedLong.address, clonedShort.address, clonedVault.address, addresses.NEXT_PUBLIC_POSITION_MANAGER_ADDRESS, addresses.NEXT_PUBLIC_FACTORY_ADDRESS);
-    addresses['CLONED_1_POOL_ADDRESS'] = clone1PoolAddress;
-    liquidity = await checkLiquidity(provider, addresses.CLONED_1_POOL_ADDRESS);
-    console.log(`Liquidity: ${liquidity.liquidity}`); //Should be Zero
-    console.log("-------------------------------------");
-    clonedLongBalance = await clonedLong.balanceOf(signer2.address);
-    clonedShortBalance = await clonedShort.balanceOf(signer2.address);
-    console.log("Signer2 Balance");
-    console.log(`Long Token: ${clonedLongBalance/10**18}`);
-    console.log(`Short Token: Balance: ${clonedShortBalance/10**18}`)
-    console.log("-------------------------------------");
-    // provide Liquidity
-    await addLiquidity("10000000", signer2, provider, clonedLong.address, clonedShort.address, addresses.NEXT_PUBLIC_POSITION_MANAGER_ADDRESS, addresses.CLONED_1_POOL_ADDRESS);
-    liquidity = await checkLiquidity(provider, addresses.CLONED_1_POOL_ADDRESS);
-    console.log(`Liquidity: ${liquidity.liquidity}`);
-    console.log("-------------------------------------");
-    clonedLongBalance = await clonedLong.balanceOf(signer2.address);
-    clonedShortBalance = await clonedShort.balanceOf(signer2.address);
-    console.log("-------------------------------------");
-    console.log("Signer2 Balance");
-    console.log(`Long Token: ${clonedLongBalance/10**18}`);
-    console.log(`Short Token: Balance: ${clonedShortBalance/10**18}`);
-    console.log("-------------------------------------");
 
-    // Signer3 mint and swap
-    const Amount = utils.parseEther("1");
-    const DEADLINE_FROM_NOW = 1200; // 20 minutes
-    const deadline = Math.floor(Date.now() / 1000) + DEADLINE_FROM_NOW;
-    await clonedVault.connect(signer3).mintAndSwap(signer3.address, 1, deadline, 500, 100, 0,
-        {
-            value: Amount
-        }
-    );
-
-    ethBalanceContract = await provider.getBalance(addresses.VAULTCLONE);
-    ethBalanceSigner = await provider.getBalance(signer3.address);
-    clonedLongBalance = await clonedLong.balanceOf(signer3.address);
-    clonedShortBalance = await clonedShort.balanceOf(signer3.address);
-
-    console.log(`Contract Eth Balance: ${ethBalanceContract}`);
-    console.log(`Signer Eth Balance: ${ethBalanceSigner}`);
-    console.log(`Cloned Long Balance: ${clonedLongBalance}`);
-    console.log(`Cloned Short Balance: ${clonedShortBalance}`);
-    console.log("Signer 3 mint");
-    console.log("-------------------------------------");
+    const creator = await clonedVault.creator();
+    console.log(creator);
+    await clonedVault.connect(signer2).setFinalValue(utils.parseEther("5"));
+    const finalValue = await clonedVault.fValue();
+    console.log(finalValue);
 }
 
 main()
